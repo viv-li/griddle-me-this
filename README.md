@@ -1,73 +1,111 @@
-# React + TypeScript + Vite
+# Griddle Me This
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A frontend-only React web application for teachers to check whether a student's requested subject change can be accommodated within the school timetable. The app finds all valid timetable configurations (potentially involving multiple class swaps) and presents them ranked by feasibility.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Timetable Upload**: Upload master timetable as JSON, persisted to localStorage
+- **Change Requests**: Enter student subjects and specify drop/pickup subjects
+- **Smart Algorithm**: BFS-based solver finds all valid configurations with minimal changes
+- **Ranked Solutions**: Solutions sorted by capacity warnings and number of changes
+- **Request History**: Track past requests with pending/applied status
 
-## React Compiler
+## Prerequisites
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Node.js 22+ (use `nvm use` if you have nvm installed)
 
-## Expanding the ESLint configuration
+## Installation
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Development
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Start the development server:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run dev
 ```
+
+The app will be available at http://localhost:5173
+
+## Testing
+
+Run tests:
+
+```bash
+npm test
+```
+
+Run tests in watch mode:
+
+```bash
+npm run test:watch
+```
+
+## Building for Production
+
+```bash
+npm run build
+```
+
+Preview the production build:
+
+```bash
+npm run preview
+```
+
+## Project Structure
+
+```
+src/
+├── components/           # React components
+│   ├── ui/              # shadcn/ui components
+│   ├── TimetableUpload.tsx
+│   ├── NewRequest.tsx
+│   ├── ResultsDisplay.tsx
+│   └── RequestHistory.tsx
+├── lib/                  # Core logic
+│   ├── storage.ts       # LocalStorage helpers
+│   ├── validation.ts    # Data validation
+│   └── timetableAlgorithm.ts  # BFS solver
+├── types/               # TypeScript interfaces
+│   └── index.ts
+├── __tests__/           # Test files
+└── App.tsx              # Main app component
+```
+
+## Tech Stack
+
+- React 18+ with TypeScript
+- Vite (build tool)
+- Tailwind CSS (styling)
+- shadcn/ui (component library)
+- Jest with ts-jest (testing)
+- LocalStorage (data persistence)
+
+## Timetable Data Format
+
+The master timetable should be a JSON array of subject objects:
+
+```json
+[
+  {
+    "allocation": "AL6",
+    "code": "11HIM6",
+    "level": 11,
+    "subject": "HIM",
+    "class": 6,
+    "semester": "both",
+    "enrolled": 23,
+    "capacity": 25
+  }
+]
+```
+
+- `allocation`: Block identifier (AL1-AL6)
+- `code`: Format `{level}{subject}{class}` (e.g., "10ENG1")
+- `semester`: "sem1", "sem2", or "both" (year-long)
+- `enrolled`: Current enrollment count
+- `capacity`: Maximum class size
