@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
 import { FileEdit, AlertCircle, Info } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -10,12 +9,18 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { StudentSubjectInput } from "@/components/StudentSubjectInput";
+import { ChangeRequestForm } from "@/components/ChangeRequestForm";
 import { loadTimetable } from "@/lib/storage";
 import { validateStudentSchedule } from "@/lib/validation";
 import type { Subject } from "@/types";
 
 interface NewRequestProps {
-  onSubmit: () => void;
+  onSubmit: (data: {
+    label: string;
+    studentSubjectCodes: string[];
+    dropSubject: string;
+    pickupSubject: string;
+  }) => void;
 }
 
 /**
@@ -26,6 +31,8 @@ export function NewRequest({ onSubmit }: NewRequestProps) {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [selectedCodes, setSelectedCodes] = useState<string[]>([]);
   const [label, setLabel] = useState("");
+  const [dropSubject, setDropSubject] = useState("");
+  const [pickupSubject, setPickupSubject] = useState("");
 
   // Load timetable subjects on mount
   useEffect(() => {
@@ -45,6 +52,21 @@ export function NewRequest({ onSubmit }: NewRequestProps) {
   }, [selectedSubjects]);
 
   const hasNoTimetable = subjects.length === 0;
+
+  const handleSubmit = () => {
+    onSubmit({
+      label,
+      studentSubjectCodes: selectedCodes,
+      dropSubject,
+      pickupSubject,
+    });
+  };
+
+  // Reset drop/pickup when student subjects change
+  useEffect(() => {
+    setDropSubject("");
+    setPickupSubject("");
+  }, [selectedCodes]);
 
   return (
     <Card className="mx-auto max-w-2xl">
@@ -110,24 +132,18 @@ export function NewRequest({ onSubmit }: NewRequestProps) {
               />
             </div>
 
-            {/* Change Request Form placeholder - Phase 3.3 */}
+            {/* Change Request Form */}
             {validation.valid && (
-              <div className="border-t pt-6 space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Drop Subject</label>
-                  <p className="text-sm text-muted-foreground">
-                    [Dropdown - Phase 3.3]
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Pick Up Subject</label>
-                  <p className="text-sm text-muted-foreground">
-                    [Dropdown - Phase 3.3]
-                  </p>
-                </div>
-                <Button onClick={onSubmit} className="w-full">
-                  [Placeholder] Find Solutions
-                </Button>
+              <div className="border-t pt-6">
+                <ChangeRequestForm
+                  allSubjects={subjects}
+                  studentSubjects={selectedSubjects}
+                  dropSubject={dropSubject}
+                  onDropChange={setDropSubject}
+                  pickupSubject={pickupSubject}
+                  onPickupChange={setPickupSubject}
+                  onSubmit={handleSubmit}
+                />
               </div>
             )}
 

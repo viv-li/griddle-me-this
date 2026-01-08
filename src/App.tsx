@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { AppView } from "@/types";
+import type { AppView, ChangeRequest, Solution } from "@/types";
 import { TimetableUpload } from "@/components/TimetableUpload";
 import { NewRequest } from "@/components/NewRequest";
 import { ResultsDisplay } from "@/components/ResultsDisplay";
@@ -13,9 +13,63 @@ import {
 } from "@/components/ui/navigation-menu";
 import { History, Plus, Upload } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { loadTimetable, addRequest } from "@/lib/storage";
+import { findSolutions, rankSolutions } from "@/lib/timetableAlgorithm";
 
 function App() {
   const [currentView, setCurrentView] = useState<AppView>("upload");
+  const [currentRequest, setCurrentRequest] = useState<ChangeRequest | null>(
+    null
+  );
+  const [currentSolutions, setCurrentSolutions] = useState<Solution[]>([]);
+
+  const handleNewRequestSubmit = (data: {
+    label: string;
+    studentSubjectCodes: string[];
+    dropSubject: string;
+    pickupSubject: string;
+  }) => {
+    const timetable = loadTimetable();
+    if (!timetable) return;
+
+    // Create the change request
+    const request: ChangeRequest = {
+      id: crypto.randomUUID(),
+      label: data.label || undefined,
+      studentSubjects: data.studentSubjectCodes,
+      dropSubject: data.dropSubject,
+      pickupSubject: data.pickupSubject,
+      createdAt: new Date().toISOString(),
+      timetableVersion: timetable.uploadedAt,
+      status: "pending",
+    };
+
+    // Get the student's current schedule as Subject objects
+    const studentSchedule = timetable.subjects.filter((s) =>
+      data.studentSubjectCodes.includes(s.code)
+    );
+
+    // Run the algorithm
+    const solutions = findSolutions(
+      timetable.subjects,
+      studentSchedule,
+      data.dropSubject,
+      data.pickupSubject
+    );
+
+    // Rank the solutions
+    const rankedSolutions = rankSolutions(solutions);
+
+    // Save the request
+    addRequest(request);
+
+    // Store in state for results display
+    setCurrentRequest(request);
+    setCurrentSolutions(rankedSolutions);
+
+    // Navigate to results
+    setCurrentView("results");
+  };
 
   const renderView = () => {
     switch (currentView) {
@@ -24,13 +78,23 @@ function App() {
           <TimetableUpload onComplete={() => setCurrentView("newRequest")} />
         );
       case "newRequest":
-        return <NewRequest onSubmit={() => setCurrentView("results")} />;
+        return <NewRequest onSubmit={handleNewRequestSubmit} />;
       case "results":
-        return <ResultsDisplay onBack={() => setCurrentView("history")} />;
+        return (
+          <ResultsDisplay
+            request={currentRequest}
+            solutions={currentSolutions}
+            onBack={() => setCurrentView("history")}
+          />
+        );
       case "history":
         return (
           <RequestHistory
-            onSelectRequest={() => setCurrentView("results")}
+            onSelectRequest={(request, solutions) => {
+              setCurrentRequest(request);
+              setCurrentSolutions(solutions);
+              setCurrentView("results");
+            }}
             onBack={() => setCurrentView("newRequest")}
           />
         );
@@ -89,7 +153,7 @@ function App() {
                   onClick={() => setCurrentView("history")}
                 >
                   <History className="mr-2 h-4 w-4" />
-                  History
+                  All Requests
                 </NavigationMenuLink>
               </NavigationMenuItem>
             </NavigationMenuList>
