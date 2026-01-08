@@ -13,8 +13,21 @@ import {
 } from "@/components/ui/navigation-menu";
 import { History, Plus, Upload } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { loadTimetable, addRequest } from "@/lib/storage";
+import {
+  loadTimetable,
+  addRequest,
+  updateRequest,
+  deleteRequest,
+} from "@/lib/storage";
 import { findSolutions, rankSolutions } from "@/lib/timetableAlgorithm";
+
+// Data to pre-populate a new request (for cloning)
+interface CloneData {
+  label?: string;
+  studentSubjectCodes: string[];
+  dropSubject: string;
+  pickupSubject: string;
+}
 
 function App() {
   const [currentView, setCurrentView] = useState<AppView>("upload");
@@ -22,6 +35,7 @@ function App() {
     null
   );
   const [currentSolutions, setCurrentSolutions] = useState<Solution[]>([]);
+  const [cloneData, setCloneData] = useState<CloneData | null>(null);
 
   const handleNewRequestSubmit = (data: {
     label: string;
@@ -63,12 +77,78 @@ function App() {
     // Save the request
     addRequest(request);
 
+    // Clear clone data after submission
+    setCloneData(null);
+
     // Store in state for results display
     setCurrentRequest(request);
     setCurrentSolutions(rankedSolutions);
 
     // Navigate to results
     setCurrentView("results");
+  };
+
+  const handleCloneRequest = (request: ChangeRequest) => {
+    setCloneData({
+      label: request.label ? `${request.label} (copy)` : undefined,
+      studentSubjectCodes: request.studentSubjects,
+      dropSubject: request.dropSubject,
+      pickupSubject: request.pickupSubject,
+    });
+    setCurrentView("newRequest");
+  };
+
+  const handleDeleteRequest = (requestId: string) => {
+    deleteRequest(requestId);
+    // If we're viewing this request, go back to history
+    if (currentRequest?.id === requestId) {
+      setCurrentRequest(null);
+      setCurrentSolutions([]);
+      setCurrentView("history");
+    }
+  };
+
+  const handleRerunRequest = () => {
+    if (!currentRequest) return;
+
+    const timetable = loadTimetable();
+    if (!timetable) return;
+
+    // Get the student's schedule from the saved subject codes
+    const studentSchedule = timetable.subjects.filter((s) =>
+      currentRequest.studentSubjects.includes(s.code)
+    );
+
+    // Rerun the algorithm with current timetable data
+    const solutions = findSolutions(
+      timetable.subjects,
+      studentSchedule,
+      currentRequest.dropSubject,
+      currentRequest.pickupSubject
+    );
+
+    const rankedSolutions = rankSolutions(solutions);
+
+    // Update the request's timetable version
+    const updatedRequest = {
+      ...currentRequest,
+      timetableVersion: timetable.uploadedAt,
+    };
+    updateRequest(currentRequest.id, {
+      timetableVersion: timetable.uploadedAt,
+    });
+
+    setCurrentRequest(updatedRequest);
+    setCurrentSolutions(rankedSolutions);
+  };
+
+  const isCurrentRequestStale = () => {
+    if (!currentRequest) return false;
+    const timetable = loadTimetable();
+    return (
+      timetable !== null &&
+      currentRequest.timetableVersion !== timetable.uploadedAt
+    );
   };
 
   const renderView = () => {
@@ -78,13 +158,41 @@ function App() {
           <TimetableUpload onComplete={() => setCurrentView("newRequest")} />
         );
       case "newRequest":
-        return <NewRequest onSubmit={handleNewRequestSubmit} />;
+        return (
+          <NewRequest
+            onSubmit={handleNewRequestSubmit}
+            initialData={cloneData || undefined}
+          />
+        );
       case "results":
         return (
           <ResultsDisplay
             request={currentRequest}
             solutions={currentSolutions}
+            isStale={isCurrentRequestStale()}
             onBack={() => setCurrentView("history")}
+            onLabelChange={(newLabel) => {
+              if (currentRequest) {
+                updateRequest(currentRequest.id, {
+                  label: newLabel || undefined,
+                });
+                setCurrentRequest({
+                  ...currentRequest,
+                  label: newLabel || undefined,
+                });
+              }
+            }}
+            onRerun={handleRerunRequest}
+            onClone={
+              currentRequest
+                ? () => handleCloneRequest(currentRequest)
+                : undefined
+            }
+            onDelete={
+              currentRequest
+                ? () => handleDeleteRequest(currentRequest.id)
+                : undefined
+            }
           />
         );
       case "history":
@@ -95,6 +203,7 @@ function App() {
               setCurrentSolutions(solutions);
               setCurrentView("results");
             }}
+            onCloneRequest={handleCloneRequest}
             onBack={() => setCurrentView("newRequest")}
           />
         );

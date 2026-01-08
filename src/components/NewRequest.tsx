@@ -21,18 +21,31 @@ interface NewRequestProps {
     dropSubject: string;
     pickupSubject: string;
   }) => void;
+  /** Initial data to pre-populate the form (for cloning) */
+  initialData?: {
+    label?: string;
+    studentSubjectCodes: string[];
+    dropSubject: string;
+    pickupSubject: string;
+  };
 }
 
 /**
  * Component for creating a new change request.
  * Combines StudentSubjectInput and ChangeRequestForm.
  */
-export function NewRequest({ onSubmit }: NewRequestProps) {
+export function NewRequest({ onSubmit, initialData }: NewRequestProps) {
   const [subjects, setSubjects] = useState<Subject[]>([]);
-  const [selectedCodes, setSelectedCodes] = useState<string[]>([]);
-  const [label, setLabel] = useState("");
-  const [dropSubject, setDropSubject] = useState("");
-  const [pickupSubject, setPickupSubject] = useState("");
+  const [selectedCodes, setSelectedCodes] = useState<string[]>(
+    initialData?.studentSubjectCodes ?? []
+  );
+  const [label, setLabel] = useState(initialData?.label ?? "");
+  const [dropSubject, setDropSubject] = useState(
+    initialData?.dropSubject ?? ""
+  );
+  const [pickupSubject, setPickupSubject] = useState(
+    initialData?.pickupSubject ?? ""
+  );
 
   // Load timetable subjects on mount
   useEffect(() => {
@@ -41,6 +54,16 @@ export function NewRequest({ onSubmit }: NewRequestProps) {
       setSubjects(timetable.subjects);
     }
   }, []);
+
+  // Pre-populate from initialData when it changes (for cloning)
+  useEffect(() => {
+    if (initialData) {
+      setSelectedCodes(initialData.studentSubjectCodes);
+      setLabel(initialData.label ?? "");
+      setDropSubject(initialData.dropSubject);
+      setPickupSubject(initialData.pickupSubject);
+    }
+  }, [initialData]);
 
   // Get selected Subject objects and validate
   const selectedSubjects = useMemo(() => {

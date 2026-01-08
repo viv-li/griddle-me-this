@@ -1,7 +1,5 @@
-import { useEffect, useState } from "react";
-import { History, AlertTriangle, RefreshCw, Trash2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { useEffect, useState, useMemo } from "react";
+import { History } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -9,12 +7,19 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { loadRequests, loadTimetable, deleteRequest } from "@/lib/storage";
+import { RequestCard } from "@/components/RequestCard";
+import {
+  loadRequests,
+  loadTimetable,
+  deleteRequest,
+  updateRequest,
+} from "@/lib/storage";
 import { findSolutions, rankSolutions } from "@/lib/timetableAlgorithm";
-import type { ChangeRequest, Solution } from "@/types";
+import type { ChangeRequest, Solution, TimetableData } from "@/types";
 
 interface RequestHistoryProps {
   onSelectRequest: (request: ChangeRequest, solutions: Solution[]) => void;
+  onCloneRequest: (request: ChangeRequest) => void;
   onBack: () => void;
 }
 
@@ -22,22 +27,41 @@ interface RequestHistoryProps {
  * Component for viewing past change requests.
  * Shows request status and allows viewing/rerunning results.
  */
-export function RequestHistory({ onSelectRequest }: RequestHistoryProps) {
+export function RequestHistory({
+  onSelectRequest,
+  onCloneRequest,
+}: RequestHistoryProps) {
   const [requests, setRequests] = useState<ChangeRequest[]>([]);
-  const [timetableVersion, setTimetableVersion] = useState<string | null>(null);
+  const [timetable, setTimetable] = useState<TimetableData | null>(null);
+  const [rerunSuccessId, setRerunSuccessId] = useState<string | null>(null);
 
   useEffect(() => {
     const savedRequests = loadRequests();
     setRequests(savedRequests.reverse()); // Most recent first
-
-    const timetable = loadTimetable();
-    if (timetable) {
-      setTimetableVersion(timetable.uploadedAt);
-    }
+    setTimetable(loadTimetable());
   }, []);
 
+  // Compute solution status for each request
+  const solutionStatus = useMemo(() => {
+    if (!timetable) return new Map<string, boolean>();
+
+    const status = new Map<string, boolean>();
+    for (const request of requests) {
+      const studentSchedule = timetable.subjects.filter((s) =>
+        request.studentSubjects.includes(s.code)
+      );
+      const solutions = findSolutions(
+        timetable.subjects,
+        studentSchedule,
+        request.dropSubject,
+        request.pickupSubject
+      );
+      status.set(request.id, solutions.length > 0);
+    }
+    return status;
+  }, [requests, timetable]);
+
   const handleSelectRequest = (request: ChangeRequest) => {
-    const timetable = loadTimetable();
     if (!timetable) return;
 
     // Get the student's schedule from the saved subject codes
@@ -57,23 +81,44 @@ export function RequestHistory({ onSelectRequest }: RequestHistoryProps) {
     onSelectRequest(request, rankedSolutions);
   };
 
-  const handleDelete = (e: React.MouseEvent, requestId: string) => {
-    e.stopPropagation();
+  const handleRerun = (request: ChangeRequest) => {
+    if (!timetable) return;
+
+    // Update the request's timetable version in storage
+    updateRequest(request.id, { timetableVersion: timetable.uploadedAt });
+
+    // Update local state - request is no longer stale
+    const updatedRequest = {
+      ...request,
+      timetableVersion: timetable.uploadedAt,
+    };
+    setRequests(
+      requests.map((r) => (r.id === request.id ? updatedRequest : r))
+    );
+
+    // Show success indicator temporarily
+    setRerunSuccessId(request.id);
+    setTimeout(() => setRerunSuccessId(null), 2000);
+  };
+
+  const handleLabelChange = (requestId: string, newLabel: string) => {
+    updateRequest(requestId, { label: newLabel || undefined });
+    setRequests(
+      requests.map((r) =>
+        r.id === requestId ? { ...r, label: newLabel || undefined } : r
+      )
+    );
+  };
+
+  const handleDelete = (requestId: string) => {
     deleteRequest(requestId);
     setRequests(requests.filter((r) => r.id !== requestId));
   };
 
   const isStale = (request: ChangeRequest) => {
-    return timetableVersion && request.timetableVersion !== timetableVersion;
-  };
-
-  const formatDate = (isoString: string) => {
-    return new Date(isoString).toLocaleString(undefined, {
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    return (
+      timetable !== null && request.timetableVersion !== timetable.uploadedAt
+    );
   };
 
   return (
@@ -100,70 +145,22 @@ export function RequestHistory({ onSelectRequest }: RequestHistoryProps) {
       ) : (
         <div className="space-y-3">
           {requests.map((request) => (
-            <Card
+            <RequestCard
               key={request.id}
-              className="cursor-pointer transition-colors hover:bg-muted/50"
+              request={request}
+              isStale={isStale(request)}
+              hasSolutions={solutionStatus.get(request.id) ?? false}
+              rerunSuccess={rerunSuccessId === request.id}
               onClick={() => handleSelectRequest(request)}
-            >
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-medium truncate">
-                        {request.label || "Untitled Request"}
-                      </p>
-                      <Badge
-                        variant={
-                          request.status === "applied" ? "default" : "secondary"
-                        }
-                      >
-                        {request.status}
-                      </Badge>
-                      {isStale(request) && (
-                        <Badge
-                          variant="outline"
-                          className="text-amber-600 border-amber-300"
-                        >
-                          <AlertTriangle className="mr-1 h-3 w-3" />
-                          Stale
-                        </Badge>
-                      )}
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      <span className="font-mono">{request.dropSubject}</span>
-                      {" → "}
-                      <span className="font-mono">{request.pickupSubject}</span>
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Created {formatDate(request.createdAt)}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleSelectRequest(request);
-                      }}
-                      title="View results"
-                    >
-                      <RefreshCw className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-destructive hover:text-destructive"
-                      onClick={(e) => handleDelete(e, request.id)}
-                      title="Delete request"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+              onLabelChange={(newLabel) =>
+                handleLabelChange(request.id, newLabel)
+              }
+              onRerun={
+                isStale(request) ? () => handleRerun(request) : undefined
+              }
+              onClone={() => onCloneRequest(request)}
+              onDelete={() => handleDelete(request.id)}
+            />
           ))}
         </div>
       )}

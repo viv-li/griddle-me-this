@@ -4,9 +4,9 @@ import {
   CheckCircle2,
   AlertCircle,
   FileJson,
-  RefreshCw,
   ChevronDown,
   ChevronUp,
+  Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -203,11 +203,12 @@ export function TimetableUpload({ onComplete }: TimetableUploadProps) {
                 onClick={handleUploadClick}
                 className="flex-1"
               >
-                <RefreshCw className="mr-2 h-4 w-4" />
+                <Upload className="mr-2 h-4 w-4" />
                 Re-upload Timetable
               </Button>
               <Button onClick={onComplete} className="flex-1">
-                + Subject Change Request
+                <Plus className="mr-2 h-4 w-4" />
+                Subject Change Request
               </Button>
             </div>
 
