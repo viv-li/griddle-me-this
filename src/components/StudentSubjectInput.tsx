@@ -227,6 +227,12 @@ export function StudentSubjectInput({
               <CheckCircle2 className="h-3.5 w-3.5" />
               Complete
             </span>
+          ) : validation.duplicateSubjects.length > 0 ||
+            validation.conflicts.length > 0 ? (
+            <span className="flex items-center gap-1 text-xs text-red-600">
+              <AlertCircle className="h-3.5 w-3.5" />
+              Has errors
+            </span>
           ) : (
             <span className="flex items-center gap-1 text-xs text-amber-600">
               <AlertCircle className="h-3.5 w-3.5" />
@@ -311,6 +317,27 @@ export function StudentSubjectInput({
                 <li key={`${conflict.allocation}-${conflict.semester}`}>
                   {conflict.allocation} {conflict.semester}:{" "}
                   {conflict.subjects.join(", ")}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Duplicate subject warnings */}
+        {validation.duplicateSubjects.length > 0 && (
+          <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+            <div className="flex items-center gap-2 font-medium">
+              <AlertCircle className="h-4 w-4" />
+              Duplicate Subjects
+            </div>
+            <p className="mt-1 text-xs">
+              A student cannot be enrolled in multiple classes of the same
+              subject:
+            </p>
+            <ul className="mt-1 list-disc list-inside text-xs">
+              {validation.duplicateSubjects.map((dup) => (
+                <li key={dup.levelSubject}>
+                  {dup.levelSubject}: {dup.classes.join(", ")}
                 </li>
               ))}
             </ul>

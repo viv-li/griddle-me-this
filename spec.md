@@ -44,29 +44,32 @@ A frontend-only React web application for teachers to check whether a student's 
 flowchart TD
     Start[App Load] --> CheckData{Timetable in LocalStorage?}
     CheckData -->|No| Upload[Upload Timetable JSON]
-    CheckData -->|Yes| ShowTimestamp[Show Last Upload Date]
+    CheckData -->|Yes| ShowOverview[Show Timetable Overview]
     Upload --> SaveData[Save to LocalStorage]
-    SaveData --> ShowTimestamp
-    ShowTimestamp --> ReUpload[Option to Re-upload]
+    SaveData --> ShowOverview
+    ShowOverview --> ReUpload[Option to Re-upload]
     ReUpload --> Upload
-    ShowTimestamp --> ViewHistory[View Request History]
-    ShowTimestamp --> NewRequest[Create New Request]
-    NewRequest --> EnterStudent[Enter Student Subjects]
-    EnterStudent --> EnterChange[Enter Subject Swap Request]
-    EnterChange --> AddLabel[Optional: Add Label]
-    AddLabel --> RunAlgorithm[Find Valid Configurations]
+    ShowOverview --> ViewHistory[View All Requests]
+    ShowOverview --> NewRequest[Create New Request]
+    NewRequest --> EnterLabel[Optional: Add Label]
+    EnterLabel --> EnterStudent[Enter Student Subjects]
+    EnterStudent --> ValidateSchedule{Schedule Valid?}
+    ValidateSchedule -->|No| FixErrors[Fix Validation Errors]
+    FixErrors --> EnterStudent
+    ValidateSchedule -->|Yes| EnterChange[Select Drop/Pickup Subjects]
+    EnterChange --> RunAlgorithm[Find Valid Configurations]
     RunAlgorithm --> HasSolution{Solutions Found?}
-    HasSolution -->|Yes| ShowResults[Display Options Grid + Steps]
-    HasSolution -->|No| ShowAlternatives[Suggest Alternatives]
+    HasSolution -->|Yes| ShowResults[Display Dual Timetables + Steps]
+    HasSolution -->|No| ShowAlternatives[Show Old Timetable + Alternatives]
     ShowResults --> AcceptOption[Accept an Option]
     AcceptOption --> UpdateStorage[Update Timetable Capacities]
     UpdateStorage --> MarkApplied[Mark Request as Applied]
-    ShowResults --> SaveForLater[Save Without Applying]
-    ShowAlternatives --> SaveForLater
+    ShowResults --> ViewAllRequests[Back to All Requests]
+    ShowAlternatives --> ViewAllRequests
     ViewHistory --> SelectRequest[Select Past Request]
     SelectRequest --> CheckStale{Data Changed Since Request?}
-    CheckStale -->|Yes| ShowWarning[Show Stale Data Warning]
-    ShowWarning --> RerunOption[Option to Rerun]
+    CheckStale -->|Yes| ShowOutdated[Show Outdated Badge]
+    ShowOutdated --> RerunOption[Option to Rerun]
     RerunOption --> RunAlgorithm
     CheckStale -->|No| ShowResults
 ```
@@ -79,34 +82,46 @@ flowchart TD
 
 - Upload master timetable as JSON file (array of subject objects)
 - Persist to browser localStorage with upload timestamp
-- Display last upload date/time prominently
+- Display last upload date/time and subject count
 - Allow re-uploading to update data at any time
+- **Master Timetable Overview**: Collapsible grid showing all subjects organized by allocation and semester, with hover tooltips for enrollment details
 
-### 2. Request History
+### 2. Request Management ("All Requests")
 
 - Maintain a list of all change requests in localStorage
-- Each request shows:
-  - Optional label (with privacy reminder: "Do not include identifying student information")
-  - Current student subjects
+- Each request displayed via shared RequestCard component showing:
+  - Solution status icon (green check or red X)
+  - Editable label (click to edit in-place)
+  - Current student subjects summary
   - Requested change (drop X for Y)
-  - Status: **Pending** | **Applied**
-  - **Stale data warning** if timetable was updated after the request was created
-- Actions available:
-  - View results
-  - Rerun (regenerate solutions with current timetable data)
-  - Delete request
+  - Number of solutions found
+  - **Outdated badge** if timetable was updated after the request was created
+- Actions available (with tooltips):
+  - View results (click on card)
+  - **Rerun on latest data** (refresh icon) - updates in place with success indicator
+  - **Clone request** (copy icon) - creates new request with same data pre-populated
+  - **Delete request** (trash icon)
 
 ### 3. Student Subject Entry
 
-- Autocomplete text input populated from uploaded timetable
-- Teacher enters all current subject codes for the student (e.g., `10ENG1`, `10MTG2`, `11HIM3`)
-- Validate that entered subjects form a valid timetable (all 6 allocations filled for both semesters)
-- Optional: Add a label for the student (with privacy reminder)
+- Autocomplete multi-select populated from uploaded timetable (Popover + Command)
+- Subjects grouped by level+subject for easier selection
+- Search field auto-clears after each selection
+- Teacher enters all current subject codes for the student
+- Real-time validation:
+  - Visual 6x2 grid showing schedule coverage
+  - All 6 allocations filled for both semesters
+  - **Duplicate subject detection**: Cannot have multiple classes of same subject (e.g., 10ART1 and 10ART2)
+- Status indicator: green check when valid, red X with error messages when invalid
 
 ### 4. Subject Change Request
 
-- **Drop**: Select which subject (level + 3-letter code) the student wants to drop
-- **Pick up**: Select which subject (level + 3-letter code) the student wants to add
+- Optional label input at top with privacy reminder: "Do not include identifying student information"
+- **Searchable single-select comboboxes** for drop and pickup subjects
+- **Drop**: Select which subject (level + 3-letter code) the student wants to drop, shows duration (Year/Semester)
+- **Pick up**: Select which subject (level + 3-letter code) the student wants to add, shows duration
+- **Duration filtering**: Pickup options filtered to match drop subject duration (year-long → year-long, semester → semester)
+- Pickup dropdown disabled until drop subject selected; clears when drop changes
 - Example: Drop `10HIS` (Year 10 History), Pick up `11HIM` (Year 11 Ancient History)
 
 ### 5. Timetabling Algorithm
@@ -132,15 +147,24 @@ The core algorithm finds all valid timetable configurations where:
 
 ### 6. Results Display
 
+**Request Summary (via RequestCard):**
+
+- Solution status icon on left
+- Editable label, request details, solution count
+- Action buttons: rerun (if outdated), clone, delete
+
 **When solutions exist:**
 
-- Visual grid showing AL1-AL6 columns x sem1/sem2 rows
-- Highlight changes from original timetable (color-coded)
-- List of change steps for teachers to execute:
-  - "Step 1: Move from 10ENG1 (AL3) → 10ENG3 (AL1)"
-  - "Step 2: Enroll in 11LIT2 (AL3)"
+- **Dual timetable display** for each solution:
+  - "Current Timetable": Shows dropped subjects (red) and outgoing rearrangements (amber)
+  - "New Timetable": Shows added subjects (green) and incoming rearrangements (amber)
+- List of change steps with icons:
+  - LogOut icon: "Drop from 10HIS3"
+  - ArrowRight icon: "Move from 10ENG1 (AL3) → 10ENG3 (AL1)"
+  - LogIn icon: "Enroll in 11HIM2 (AL3)"
 - Capacity status for each affected class
 - Multiple options shown as expandable cards, ranked by feasibility
+- First solution marked as "Recommended" and expanded by default
 - **Accept button** for each option to apply the change
 
 **When accepting a solution:**
@@ -152,6 +176,7 @@ The core algorithm finds all valid timetable configurations where:
 **When no solution exists:**
 
 - Message explaining the change is not possible
+- **Display original timetable** so user can see current state
 - Suggest alternative subjects available in the same allocation block as the subject being dropped
 
 ---
@@ -162,35 +187,40 @@ The core algorithm finds all valid timetable configurations where:
 
 - **React 18+** with TypeScript
 - **Tailwind CSS** for styling
-- **shadcn/ui** component library
+- **shadcn/ui** component library (Button, Card, Input, Popover, Command, Badge, Collapsible, Tooltip, etc.)
 - **Vite** as build tool
+- **Jest** with ts-jest for testing
 
 ### Key Components
 
 ```
 src/
 ├── components/
-│   ├── TimetableUpload.tsx       # JSON file upload with timestamp display
-│   ├── RequestHistory.tsx        # List of past requests with status
-│   ├── StudentSubjectInput.tsx   # Autocomplete multi-select for current subjects
-│   ├── ChangeRequestForm.tsx     # Drop/pickup subject selection + label
-│   ├── ResultsDisplay.tsx        # Container for results
-│   ├── TimetableGrid.tsx         # Visual AL x Semester grid
-│   ├── ChangeSteps.tsx           # Numbered list of required changes
-│   ├── SolutionCard.tsx          # Single solution with accept button
-│   └── AlternativeSuggestions.tsx
+│   ├── ui/                        # shadcn/ui components
+│   ├── TimetableUpload.tsx        # JSON file upload with timetable overview
+│   ├── StudentSubjectInput.tsx    # Autocomplete multi-select with validation
+│   ├── ChangeRequestForm.tsx      # Searchable drop/pickup selection
+│   ├── NewRequest.tsx             # Container combining input + form
+│   ├── TimetableGrid.tsx          # Visual AL x Semester grid (dual mode)
+│   ├── ChangeSteps.tsx            # Numbered list with icons
+│   ├── SolutionCard.tsx           # Dual timetable display + accept button
+│   ├── AlternativeSuggestions.tsx # No-solution alternatives
+│   ├── EditableLabel.tsx          # In-place label editing
+│   ├── RequestCard.tsx            # Shared request display component
+│   ├── ResultsDisplay.tsx         # Results container with RequestCard
+│   └── RequestHistory.tsx         # All Requests list
 ├── lib/
-│   ├── timetableAlgorithm.ts     # BFS solver, capacity checking, ranking
-│   ├── timetableUtils.ts         # Subject utility functions
-│   ├── validation.ts             # Timetable validity checks
-│   └── storage.ts                # LocalStorage helpers
+│   ├── timetableAlgorithm.ts      # BFS solver, capacity checking, ranking
+│   ├── timetableUtils.ts          # Subject utility functions
+│   ├── validation.ts              # Timetable and schedule validation
+│   └── storage.ts                 # LocalStorage helpers
 ├── types/
-│   └── index.ts                  # TypeScript interfaces
+│   └── index.ts                   # TypeScript interfaces
 ├── __tests__/
-│   ├── fixtures/                 # Test data (sample timetable JSON)
-│   ├── helpers/                  # Test setup utilities
-│   ├── *.test.ts                 # Unit tests
-│   └── *.integration.test.ts     # Integration tests
+│   ├── fixtures/                  # Test data (sample timetable JSON)
+│   ├── helpers/                   # Test setup utilities
+│   ├── *.test.ts                  # Unit tests
+│   └── *.integration.test.ts      # Integration tests
 └── App.tsx
 ```
 
@@ -198,10 +228,10 @@ src/
 
 ```typescript
 interface Subject {
-  allocation: string;  // "AL1" - "AL6"
-  code: string;        // "10ENG1"
+  allocation: string; // "AL1" - "AL6"
+  code: string; // "10ENG1"
   level: number;
-  subject: string;     // 3-letter code, e.g., "ENG"
+  subject: string; // 3-letter code, e.g., "ENG"
   class: number;
   semester: "sem1" | "sem2" | "both";
   enrolled: number;
@@ -210,33 +240,41 @@ interface Subject {
 
 interface TimetableData {
   subjects: Subject[];
-  uploadedAt: string;  // ISO timestamp
+  uploadedAt: string; // ISO timestamp
 }
 
 interface ChangeRequest {
   id: string;
-  label?: string;                      // Optional, user-provided
-  studentSubjects: string[];           // Current subject codes
-  dropSubject: string;                 // Level + subject code, e.g., "10HIS"
-  pickupSubject: string;               // Level + subject code, e.g., "11HIM"
-  createdAt: string;                   // ISO timestamp
-  timetableVersion: string;            // uploadedAt of timetable used
+  label?: string; // Optional, user-provided
+  studentSubjects: string[]; // Current subject codes
+  dropSubject: string; // Level + subject code, e.g., "10HIS"
+  pickupSubject: string; // Level + subject code, e.g., "11HIM"
+  createdAt: string; // ISO timestamp
+  timetableVersion: string; // uploadedAt of timetable used
   status: "pending" | "applied";
-  appliedSolutionIndex?: number;       // Which solution was accepted
+  appliedSolutionIndex?: number; // Which solution was accepted
 }
 
 interface Solution {
-  newTimetable: Subject[];             // Student's new subject list
-  changes: ClassChange[];              // Steps to execute
+  originalTimetable: Subject[]; // Student's original subject list
+  newTimetable: Subject[]; // Student's new subject list
+  changes: ClassChange[]; // Steps to execute
   hasCapacityWarning: boolean;
-  capacityWarnings: string[];          // Which classes exceed capacity
+  capacityWarnings: string[]; // Which classes exceed capacity
 }
 
 interface ClassChange {
   type: "rearrange" | "drop" | "enroll";
-  fromClass?: Subject;                 // For rearrange/drop
-  toClass?: Subject;                   // For rearrange/enroll
-  description: string;                 // Human-readable step
+  fromClass?: Subject; // For rearrange/drop
+  toClass?: Subject; // For rearrange/enroll
+  description: string; // Human-readable step
+}
+
+interface ScheduleValidationResult {
+  valid: boolean;
+  missingAllocations: { allocation: string; semester: string }[];
+  conflicts: string[];
+  duplicateSubjects: string[]; // Subjects with multiple classes enrolled
 }
 ```
 
@@ -275,26 +313,56 @@ The algorithm models the problem as a graph search:
 
 **Alternatives Considered:**
 
-| Approach | Why Not Selected |
-|----------|------------------|
-| Brute Force | Exponential complexity, unnecessary |
+| Approach         | Why Not Selected                      |
+| ---------------- | ------------------------------------- |
+| Brute Force      | Exponential complexity, unnecessary   |
 | Backtracking/DFS | Doesn't guarantee shortest path first |
-| SAT Solver | Overkill, adds external dependency |
+| SAT Solver       | Overkill, adds external dependency    |
 
 ---
 
 ## Edge Cases
 
-| Scenario | Handling |
-|----------|----------|
-| Target subject has no available classes | Show "not possible" + alternatives from same allocation |
-| All target classes exceed capacity | Show all options with warnings (still valid) |
-| Circular dependency in swaps | BFS visited-state tracking prevents infinite loops |
-| Student enters invalid subject code | Autocomplete prevents; validation error on submit |
-| Uploaded JSON malformed | Show clear error message, don't save to storage |
-| Subject only offered in one semester but student needs both | Algorithm respects semester constraints |
-| Request run on old timetable data | Show "stale data" warning, offer rerun option |
-| Student already has the pickup subject | Show error: "Student already enrolled in this subject" |
+| Scenario                                                    | Handling                                                |
+| ----------------------------------------------------------- | ------------------------------------------------------- |
+| Target subject has no available classes                     | Show "not possible" + alternatives from same allocation |
+| All target classes exceed capacity                          | Show all options with warnings (still valid)            |
+| Circular dependency in swaps                                | BFS visited-state tracking prevents infinite loops      |
+| Student enters invalid subject code                         | Autocomplete prevents; validation error on submit       |
+| Uploaded JSON malformed                                     | Show clear error message, don't save to storage         |
+| Subject only offered in one semester but student needs both | Algorithm respects semester constraints                 |
+| Request run on old timetable data                           | Show "outdated" badge, offer rerun option               |
+| Student already has the pickup subject                      | Show error: "Student already enrolled in this subject"  |
+| Student has duplicate subject classes                       | Validation catches and displays error                   |
+| Drop and pickup have different durations                    | Pickup options filtered to match drop duration          |
+
+---
+
+## UI/UX Details
+
+### TimetableGrid Modes
+
+The TimetableGrid component supports two modes for displaying changes:
+
+- **"current" mode**: Used to show the student's current timetable
+  - Dropped subjects highlighted in red
+  - Subjects being moved away highlighted in amber
+- **"new" mode**: Used to show the resulting timetable after changes
+  - New subjects highlighted in green
+  - Subjects being moved in highlighted in amber
+
+### RequestCard Component
+
+A shared component used consistently across RequestHistory and ResultsDisplay:
+
+- **Left side**: Solution status icon (check or X)
+- **Center**: Editable label, request summary
+- **Right side**: Action buttons with tooltips
+- **Outdated badge**: Shown when timetable version differs
+
+### In-Place Editing
+
+Labels can be edited by clicking on them, which transforms the text into an input field. Changes are saved on blur or Enter key press.
 
 ---
 

@@ -4,11 +4,13 @@ A frontend-only React web application for teachers to check whether a student's 
 
 ## Features
 
-- **Timetable Upload**: Upload master timetable as JSON, persisted to localStorage
-- **Change Requests**: Enter student subjects and specify drop/pickup subjects
-- **Smart Algorithm**: BFS-based solver finds all valid configurations with minimal changes
+- **Timetable Upload**: Upload master timetable as JSON, with visual overview grid and enrollment tooltips
+- **Smart Validation**: Real-time schedule validation with duplicate subject detection
+- **Change Requests**: Enter student subjects and specify drop/pickup with duration-aware filtering
+- **BFS Algorithm**: Finds all valid configurations with minimal changes
+- **Dual Timetable Display**: Side-by-side current vs new timetable comparison
 - **Ranked Solutions**: Solutions sorted by capacity warnings and number of changes
-- **Request History**: Track past requests with pending/applied status
+- **Request Management**: Track requests with inline editing, clone, rerun, and delete actions
 
 ## Prerequisites
 
@@ -60,25 +62,33 @@ npm run preview
 
 ```
 src/
-├── components/           # React components
-│   ├── ui/              # shadcn/ui components
-│   ├── TimetableUpload.tsx
-│   ├── NewRequest.tsx
-│   ├── ResultsDisplay.tsx
-│   └── RequestHistory.tsx
-├── lib/                  # Core logic
-│   ├── storage.ts       # LocalStorage helpers
-│   ├── validation.ts    # Data validation
-│   ├── timetableUtils.ts    # Subject utility functions
-│   └── timetableAlgorithm.ts  # BFS solver + capacity + ranking
-├── types/               # TypeScript interfaces
+├── components/                    # React components
+│   ├── ui/                       # shadcn/ui components
+│   ├── TimetableUpload.tsx       # JSON upload with timetable overview
+│   ├── StudentSubjectInput.tsx   # Autocomplete multi-select with validation
+│   ├── ChangeRequestForm.tsx     # Searchable drop/pickup selection
+│   ├── NewRequest.tsx            # Container for new request form
+│   ├── TimetableGrid.tsx         # Visual AL x Semester grid (dual mode)
+│   ├── ChangeSteps.tsx           # Numbered change steps with icons
+│   ├── SolutionCard.tsx          # Dual timetable + accept button
+│   ├── AlternativeSuggestions.tsx # No-solution alternatives
+│   ├── EditableLabel.tsx         # In-place label editing
+│   ├── RequestCard.tsx           # Shared request display component
+│   ├── ResultsDisplay.tsx        # Results container
+│   └── RequestHistory.tsx        # All Requests list
+├── lib/                          # Core logic
+│   ├── storage.ts                # LocalStorage helpers
+│   ├── validation.ts             # Data validation (schedule + duplicates)
+│   ├── timetableUtils.ts         # Subject utility functions
+│   └── timetableAlgorithm.ts     # BFS solver + capacity + ranking
+├── types/                        # TypeScript interfaces
 │   └── index.ts
-├── __tests__/           # Test files
-│   ├── fixtures/        # Test data (sample timetable)
-│   ├── helpers/         # Test setup utilities
-│   ├── *.test.ts        # Unit tests
-│   └── *.integration.test.ts  # Integration tests
-└── App.tsx              # Main app component
+├── __tests__/                    # Test files
+│   ├── fixtures/                 # Test data (sample timetable)
+│   ├── helpers/                  # Test setup utilities
+│   ├── *.test.ts                 # Unit tests
+│   └── *.integration.test.ts     # Integration tests
+└── App.tsx                       # Main app component
 ```
 
 ## Tech Stack
@@ -114,3 +124,28 @@ The master timetable should be a JSON array of subject objects:
 - `semester`: "sem1", "sem2", or "both" (year-long)
 - `enrolled`: Current enrollment count
 - `capacity`: Maximum class size
+
+## Key Concepts
+
+### Schedule Validation
+
+A valid student schedule requires:
+
+- All 6 allocation blocks filled for both semesters
+- No duplicate subjects (e.g., cannot have both 10ART1 and 10ART2)
+- Year-long subjects occupy one allocation for both semesters
+
+### Duration Filtering
+
+When selecting a subject to pick up:
+
+- If dropping a year-long subject, only year-long options are shown
+- If dropping a semester subject, only semester options are shown
+
+### Solution Display
+
+Each solution shows:
+
+- **Current Timetable**: Dropped subjects (red), outgoing moves (amber)
+- **New Timetable**: Added subjects (green), incoming moves (amber)
+- Numbered steps with capacity indicators

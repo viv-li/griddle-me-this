@@ -10,6 +10,10 @@ flowchart LR
         Input[StudentSubjectInput]
         Form[ChangeRequestForm]
         Results[ResultsDisplay]
+        NewReq[NewRequest]
+        Cards[RequestCard]
+        Solution[SolutionCard]
+        Grid[TimetableGrid]
     end
 
     subgraph logic [Logic Layer]
@@ -31,6 +35,11 @@ flowchart LR
     Validation --> Utils
     Results --> Storage
     Storage --> LS
+    NewReq --> Input
+    NewReq --> Form
+    Cards --> History
+    Cards --> Results
+    Solution --> Grid
 ```
 
 ---
@@ -53,7 +62,7 @@ flowchart LR
 ### 1.3 Minimal App Shell
 
 - Create [`src/App.tsx`](src/App.tsx) with basic view structure
-- Simple state-based navigation between views: Upload, NewRequest, Results, History
+- Simple state-based navigation between views: Upload, NewRequest, Results, AllRequests
 - Placeholder components for each view (to be replaced in later phases)
 
 ### 1.4 README Documentation
@@ -99,13 +108,14 @@ Build and test core logic together - each module with its test file.
 
 - Create [`src/lib/validation.ts`](src/lib/validation.ts):
   - `validateTimetableJSON()` - check uploaded file structure
-  - `validateStudentSchedule()` - ensure 6 allocations filled for both semesters
+  - `validateStudentSchedule()` - ensure 6 allocations filled for both semesters, detect duplicate subjects
   - `getStudentSubjects()` - extract unique level+subject codes from schedule
 - Create [`src/__tests__/validation.test.ts`](src/__tests__/validation.test.ts):
   - Valid timetable JSON structure
   - Invalid/malformed JSON rejection
   - Valid student schedule (6 allocations filled, both semesters)
   - Invalid schedule detection (missing allocations, semester conflicts)
+  - Duplicate subject detection (e.g., 10ART1 and 10ART2 both enrolled)
 
 ### 2.4 Algorithm Module - State & Conflicts
 
@@ -152,7 +162,7 @@ Build and test core logic together - each module with its test file.
 
 ---
 
-## Phase 3: Data Entry UI
+## Phase 3: Data Entry UI ✅
 
 Wire up UI components to the App shell - end-to-end flow testable after this phase.
 
@@ -161,75 +171,136 @@ Wire up UI components to the App shell - end-to-end flow testable after this pha
 - Create [`src/components/TimetableUpload.tsx`](src/components/TimetableUpload.tsx)
 - Simple file input (no drag-drop needed for MVP)
 - Validate uploaded JSON using `validateTimetableJSON()`
-- Display upload timestamp
-- "Re-upload" button to replace data
+- Display upload timestamp and subject count
+- "Re-upload" button with Upload icon to replace data
+- "+ Subject Change Request" button with Plus icon as primary CTA (right side)
 - Persist to localStorage via storage module
+- **Master Timetable Overview**: Collapsible grid showing all subjects organized by allocation and semester
+  - Badges for each subject with enrollment info
+  - Hover tooltips showing detailed enrollment (e.g., "23/25 enrolled")
 
 ### 3.2 Student Subject Input
 
 - Create [`src/components/StudentSubjectInput.tsx`](src/components/StudentSubjectInput.tsx)
-- Autocomplete/combobox populated from timetable data (use shadcn Combobox)
+- Autocomplete/combobox using shadcn Popover + Command components
 - Multi-select for entering all current subject codes
+- Group subjects by level+subject for easier selection
+- **Auto-clear search field** after each selection
 - Real-time validation feedback showing which allocations are filled
-- Visual indicator when valid schedule is complete (all 6 allocations, both semesters)
+- Visual 6x2 grid showing schedule coverage
+- **Duplicate subject validation**: Detect when student has multiple classes of same subject (e.g., 10ART1 and 10ART2)
+- Status indicator: green check when valid, red X when errors exist
 
 ### 3.3 Change Request Form
 
 - Create [`src/components/ChangeRequestForm.tsx`](src/components/ChangeRequestForm.tsx)
-- Dropdown for "Drop" subject (derived from student's current subjects, shows level+subject like "10HIS")
-- Dropdown for "Pickup" subject (excludes subjects student already has enrolled - prevents invalid selections at UI level)
-- Optional label input with privacy reminder text
+- **Searchable single-select comboboxes** for both drop and pickup subjects (using Popover + Command)
+- "Drop" subject dropdown: derived from student's current subjects, shows level+subject (e.g., "10HIS") with duration label
+- "Pickup" subject dropdown: excludes subjects student already has, shows level+subject with duration label
+- **Duration filtering**: If drop subject is semester-long, only show semester-long pickup options; if year-long, only show year-long options
+- Pickup dropdown disabled until drop subject is selected; clears when drop changes
 - Submit triggers algorithm and navigates to Results view
 
-### 3.4 Wire Up App Shell
+### 3.4 New Request Container
+
+- Create [`src/components/NewRequest.tsx`](src/components/NewRequest.tsx)
+- Combines StudentSubjectInput and ChangeRequestForm in one card
+- Optional label input with privacy reminder at the top of the form
+- Conditional rendering: show ChangeRequestForm only when schedule is valid
+- **Clone support**: Accept `initialData` prop to pre-populate form fields for cloning requests
+
+### 3.5 Wire Up App Shell
 
 - Replace placeholder components with real ones
-- Connect navigation flow: Upload → NewRequest → Results
+- Connect navigation flow: Upload → NewRequest → Results → AllRequests
 - Store current request in app state for results display
+- Rename "History" view to "All Requests" throughout the app
 
 ---
 
-## Phase 4: Results UI
+## Phase 4: Results UI ✅
 
 ### 4.1 Timetable Grid Component
 
 - Create [`src/components/TimetableGrid.tsx`](src/components/TimetableGrid.tsx)
 - 6 columns (AL1-AL6) x 2 rows (sem1/sem2) grid
-- Color-code cells: unchanged, dropped (red), added (green), rearranged (yellow)
+- **Dual mode support** via `mode` prop:
+  - `"current"` mode: highlights dropped (red) and outgoing rearranged (amber) subjects
+  - `"new"` mode: highlights added (green) and incoming rearranged (amber) subjects
 - Handle year-long subjects spanning both semester rows
+- Accepts legend as a prop for flexibility
 
 ### 4.2 Change Steps Component
 
 - Create [`src/components/ChangeSteps.tsx`](src/components/ChangeSteps.tsx)
 - Numbered list of human-readable steps from `ClassChange[]`
+- Icons for each step type: LogOut (drop), LogIn (enroll), ArrowRight (rearrange)
 - Format: "Step 1: Move from 10ENG1 (AL3) → 10ENG3 (AL1)"
 - Show capacity status indicator per affected class
+- Highlight steps with capacity warnings
 
 ### 4.3 Solution Card Component
 
 - Create [`src/components/SolutionCard.tsx`](src/components/SolutionCard.tsx)
-- Expandable card (collapsed by default, first one expanded)
-- Contains TimetableGrid + ChangeSteps
+- Expandable card using shadcn Collapsible (collapsed by default, first one expanded)
+- **Side-by-side timetable display**:
+  - "Current Timetable" using TimetableGrid in `"current"` mode
+  - "New Timetable" using TimetableGrid in `"new"` mode
+- "Recommended" badge on first solution
 - Capacity warning badge if `hasCapacityWarning`
-- "Accept" button to apply solution
+- "Accept This Solution" button (placeholder for Phase 5)
 
 ### 4.4 Alternative Suggestions Component
 
 - Create [`src/components/AlternativeSuggestions.tsx`](src/components/AlternativeSuggestions.tsx)
 - Shown when no solutions exist
 - List other subjects available in same allocation as dropped subject
-- Filter to classes with available capacity
+- Filter to show classes with available capacity first
+- Show capacity status for each suggestion
 
-### 4.5 Results Display Container
+### 4.5 Editable Label Component
+
+- Create [`src/components/EditableLabel.tsx`](src/components/EditableLabel.tsx)
+- Renders as span by default
+- On click, transforms into Input field for in-place editing
+- Saves changes on blur or Enter key press
+- Used in RequestCard for editing request labels
+
+### 4.6 Request Card Component
+
+- Create [`src/components/RequestCard.tsx`](src/components/RequestCard.tsx)
+- **Shared component** used in both RequestHistory and ResultsDisplay
+- Displays:
+  - Solution status icon on left: green check (has solutions) or red X (no solutions)
+  - EditableLabel for in-place label editing
+  - Request summary (student subjects, drop/pickup)
+  - Number of solutions found
+- **Action buttons with tooltips** on top right:
+  - Refresh icon: "Rerun on latest data" (shown when request is outdated)
+  - Copy icon: "Clone request" to create new request with same data
+  - Trash icon: "Delete request"
+- **Outdated badge**: Right-aligned badge shown when `timetableVersion` differs from current timetable
+- **Temporary success indicator**: Shows checkmark for 2 seconds after successful rerun
+
+### 4.7 Results Display Container
 
 - Create [`src/components/ResultsDisplay.tsx`](src/components/ResultsDisplay.tsx)
+- Uses RequestCard at the top to show request summary with all actions
 - If solutions exist: map to ranked SolutionCards
-- If no solutions: show message + AlternativeSuggestions
-- "Save for Later" button to save request without applying
+- **If no solutions**: show message + AlternativeSuggestions + original timetable display
+- "All Requests" button to navigate back to history
+
+### 4.8 Request History Component
+
+- Create [`src/components/RequestHistory.tsx`](src/components/RequestHistory.tsx)
+- Title: "All Requests"
+- Lists all saved requests using RequestCard component
+- Click on request navigates to ResultsDisplay
+- **Inline rerun**: Rerun button updates request in place without navigating, shows temporary success indicator
 
 ---
 
-## Phase 5: History & Apply
+## Phase 5: Apply Solutions
 
 ### 5.1 Apply Solution Flow
 
@@ -239,25 +310,11 @@ Wire up UI components to the App shell - end-to-end flow testable after this pha
 - Show inline confirmation message with summary of changes applied
 - Update UI state to reflect applied status (disable Accept button, show "Applied" badge)
 
-### 5.2 Request History Component
+### 5.2 Wire Up Apply Actions
 
-- Create [`src/components/RequestHistory.tsx`](src/components/RequestHistory.tsx)
-- List all saved requests showing:
-  - Optional label
-  - Current subjects summary
-  - Drop/pickup info
-  - Status badge: Pending | Applied
-  - Stale data warning if `timetableVersion !== current uploadedAt`
-- Actions per request:
-  - View results (navigate to Results with stored solutions)
-  - Rerun (regenerate solutions with current timetable)
-  - Delete
-
-### 5.3 Wire Up History View
-
-- Add History view to App shell navigation
-- Connect "View History" from main screen
-- Handle stale data rerun flow
+- Connect "Accept This Solution" button to apply flow
+- Update RequestCard to show applied state
+- Prevent re-applying already applied requests
 
 ---
 
@@ -302,15 +359,18 @@ Wire up UI components to the App shell - end-to-end flow testable after this pha
 | `src/__tests__/helpers/testHelpers.ts`        | Test setup helpers                       |
 | `src/__tests__/*.test.ts`                     | Unit tests                               |
 | `src/__tests__/*.integration.test.ts`         | Integration tests                        |
-| `src/components/TimetableUpload.tsx`          | JSON upload UI                           |
+| `src/components/TimetableUpload.tsx`          | JSON upload UI with timetable overview   |
 | `src/components/StudentSubjectInput.tsx`      | Subject entry autocomplete               |
-| `src/components/ChangeRequestForm.tsx`        | Drop/pickup selection                    |
-| `src/components/TimetableGrid.tsx`            | Visual schedule grid                     |
+| `src/components/ChangeRequestForm.tsx`        | Drop/pickup selection with duration      |
+| `src/components/NewRequest.tsx`               | Container for new request form           |
+| `src/components/TimetableGrid.tsx`            | Visual schedule grid (dual mode)         |
 | `src/components/ChangeSteps.tsx`              | Numbered change list                     |
-| `src/components/SolutionCard.tsx`             | Single solution display                  |
+| `src/components/SolutionCard.tsx`             | Single solution with dual timetables     |
 | `src/components/AlternativeSuggestions.tsx`   | No-solution alternatives                 |
+| `src/components/EditableLabel.tsx`            | In-place label editing                   |
+| `src/components/RequestCard.tsx`              | Shared request display card              |
 | `src/components/ResultsDisplay.tsx`           | Results container                        |
-| `src/components/RequestHistory.tsx`           | Past requests list                       |
+| `src/components/RequestHistory.tsx`           | Past requests list ("All Requests")      |
 | `src/App.tsx`                                 | Main app shell and navigation            |
 
 ---

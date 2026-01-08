@@ -169,14 +169,20 @@ export interface ScheduleValidationResult {
     semester: "sem1" | "sem2";
     subjects: string[];
   }>;
+  /** Subjects where student is enrolled in multiple classes (e.g., 10ART1 and 10ART2) */
+  duplicateSubjects: Array<{
+    levelSubject: string;
+    classes: string[];
+  }>;
 }
 
 /**
  * Validate that a student schedule covers all allocations and semesters.
- * A valid schedule must have exactly one subject per allocation per semester.
+ * A valid schedule must have exactly one subject per allocation per semester,
+ * and a student cannot be enrolled in multiple classes of the same subject.
  *
  * @param schedule - Array of subjects in the student's schedule
- * @returns Validation result with any missing slots or conflicts
+ * @returns Validation result with any missing slots, conflicts, or duplicate subjects
  */
 export function validateStudentSchedule(
   schedule: Subject[]
@@ -199,6 +205,9 @@ export function validateStudentSchedule(
     });
   });
 
+  // Track subjects by level+subject to detect duplicates (e.g., 10ART1 and 10ART2)
+  const subjectsByLevelSubject: Record<string, string[]> = {};
+
   // Fill in what we have
   for (const subject of schedule) {
     if (subject.semester === "both") {
@@ -207,6 +216,13 @@ export function validateStudentSchedule(
     } else {
       filled[`${subject.allocation}-${subject.semester}`].push(subject.code);
     }
+
+    // Track by level+subject
+    const levelSubject = getLevelSubjectCode(subject.code);
+    if (!subjectsByLevelSubject[levelSubject]) {
+      subjectsByLevelSubject[levelSubject] = [];
+    }
+    subjectsByLevelSubject[levelSubject].push(subject.code);
   }
 
   // Find missing slots and conflicts
@@ -228,9 +244,23 @@ export function validateStudentSchedule(
     }
   }
 
+  // Find duplicate subjects (same level+subject, different class)
+  const duplicateSubjects: ScheduleValidationResult["duplicateSubjects"] = [];
+  for (const [levelSubject, classes] of Object.entries(
+    subjectsByLevelSubject
+  )) {
+    if (classes.length > 1) {
+      duplicateSubjects.push({ levelSubject, classes });
+    }
+  }
+
   return {
-    valid: missingSlots.length === 0 && conflicts.length === 0,
+    valid:
+      missingSlots.length === 0 &&
+      conflicts.length === 0 &&
+      duplicateSubjects.length === 0,
     missingSlots,
     conflicts,
+    duplicateSubjects,
   };
 }

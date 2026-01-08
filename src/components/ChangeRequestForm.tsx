@@ -1,15 +1,22 @@
-import { useMemo } from "react";
-import { ArrowRight } from "lucide-react";
+import { useMemo, useState } from "react";
+import { ArrowRight, Check, ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import { getLevelSubjectCode } from "@/lib/timetableUtils";
-import type { Subject } from "@/types";
+import type { Subject, Semester } from "@/types";
 
 interface ChangeRequestFormProps {
   /** All subjects in the timetable */
@@ -30,10 +37,15 @@ interface ChangeRequestFormProps {
   disabled?: boolean;
 }
 
+interface SubjectOption {
+  code: string; // level+subject code (e.g., "10ENG")
+  isYearLong: boolean;
+}
+
 /**
  * Form for selecting which subject to drop and which to pick up.
  * Drop options come from student's current subjects.
- * Pickup options exclude subjects student already has.
+ * Pickup options are filtered to match drop subject duration (year/semester).
  */
 export function ChangeRequestForm({
   allSubjects,
@@ -45,37 +57,79 @@ export function ChangeRequestForm({
   onSubmit,
   disabled = false,
 }: ChangeRequestFormProps) {
-  // Get unique level+subject codes from student's current subjects
+  const [dropOpen, setDropOpen] = useState(false);
+  const [pickupOpen, setPickupOpen] = useState(false);
+
+  // Build drop options with year-long info from student's subjects
   const dropOptions = useMemo(() => {
-    const codes = new Set<string>();
+    const optionsMap = new Map<string, SubjectOption>();
 
     for (const subject of studentSubjects) {
-      codes.add(getLevelSubjectCode(subject.code));
+      const code = getLevelSubjectCode(subject.code);
+      if (!optionsMap.has(code)) {
+        optionsMap.set(code, {
+          code,
+          isYearLong: subject.semester === "both",
+        });
+      }
     }
 
-    return Array.from(codes).sort((a, b) => a.localeCompare(b));
+    return Array.from(optionsMap.values()).sort((a, b) =>
+      a.code.localeCompare(b.code)
+    );
   }, [studentSubjects]);
 
-  // Get all unique level+subject codes from timetable, excluding student's current subjects
+  // Get the dropped subject's semester type
+  const droppedSubjectInfo = useMemo(() => {
+    if (!dropSubject) return null;
+    const option = dropOptions.find((o) => o.code === dropSubject);
+    return option || null;
+  }, [dropSubject, dropOptions]);
+
+  // Build pickup options filtered by duration and excluding student's subjects
   const pickupOptions = useMemo(() => {
     const studentCodes = new Set(
       studentSubjects.map((s) => getLevelSubjectCode(s.code))
     );
 
-    const codes = new Set<string>();
+    const optionsMap = new Map<string, SubjectOption>();
 
     for (const subject of allSubjects) {
-      const levelSubjectCode = getLevelSubjectCode(subject.code);
+      const code = getLevelSubjectCode(subject.code);
       // Exclude subjects student already has
-      if (!studentCodes.has(levelSubjectCode)) {
-        codes.add(levelSubjectCode);
+      if (studentCodes.has(code)) continue;
+
+      const isYearLong = subject.semester === "both";
+
+      // If drop subject is selected, filter by matching duration
+      if (droppedSubjectInfo !== null) {
+        if (droppedSubjectInfo.isYearLong !== isYearLong) continue;
+      }
+
+      if (!optionsMap.has(code)) {
+        optionsMap.set(code, { code, isYearLong });
       }
     }
 
-    return Array.from(codes).sort((a, b) => a.localeCompare(b));
-  }, [allSubjects, studentSubjects]);
+    return Array.from(optionsMap.values()).sort((a, b) =>
+      a.code.localeCompare(b.code)
+    );
+  }, [allSubjects, studentSubjects, droppedSubjectInfo]);
 
-  const canSubmit = dropSubject && pickupSubject && !disabled;
+  // Clear pickup if it's no longer valid after drop changes
+  const selectedPickupOption = pickupOptions.find((o) => o.code === pickupSubject);
+  const isPickupValid = !pickupSubject || selectedPickupOption;
+
+  const canSubmit =
+    dropSubject &&
+    pickupSubject &&
+    isPickupValid &&
+    dropSubject !== pickupSubject &&
+    !disabled;
+
+  const formatLabel = (option: SubjectOption) => {
+    return `${option.code} · ${option.isYearLong ? "Year" : "Semester"}`;
+  };
 
   return (
     <div className="space-y-4">
@@ -83,18 +137,67 @@ export function ChangeRequestForm({
         {/* Drop Subject */}
         <div className="space-y-2">
           <label className="text-sm font-medium">Drop Subject</label>
-          <Select value={dropSubject} onValueChange={onDropChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select subject to drop..." />
-            </SelectTrigger>
-            <SelectContent>
-              {dropOptions.map((code) => (
-                <SelectItem key={code} value={code}>
-                  {code}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Popover open={dropOpen} onOpenChange={setDropOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={dropOpen}
+                className="w-full justify-between font-normal"
+              >
+                {dropSubject ? (
+                  <span>
+                    {dropSubject}
+                    <span className="ml-2 text-muted-foreground text-xs">
+                      {droppedSubjectInfo?.isYearLong ? "Year" : "Semester"}
+                    </span>
+                  </span>
+                ) : (
+                  <span className="text-muted-foreground">
+                    Select subject to drop...
+                  </span>
+                )}
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[250px] p-0" align="start">
+              <Command>
+                <CommandInput placeholder="Search subjects..." />
+                <CommandList>
+                  <CommandEmpty>No subject found.</CommandEmpty>
+                  <CommandGroup>
+                    {dropOptions.map((option) => (
+                      <CommandItem
+                        key={option.code}
+                        value={option.code}
+                        onSelect={(value) => {
+                          onDropChange(value === dropSubject ? "" : value);
+                          // Clear pickup if duration changed
+                          if (value !== dropSubject) {
+                            onPickupChange("");
+                          }
+                          setDropOpen(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            dropSubject === option.code
+                              ? "opacity-100"
+                              : "opacity-0"
+                          )}
+                        />
+                        <span className="font-mono">{option.code}</span>
+                        <span className="ml-2 text-muted-foreground text-xs">
+                          {option.isYearLong ? "Year" : "Semester"}
+                        </span>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
         </div>
 
         {/* Arrow indicator */}
@@ -105,20 +208,76 @@ export function ChangeRequestForm({
         {/* Pickup Subject */}
         <div className="space-y-2">
           <label className="text-sm font-medium">Pick Up Subject</label>
-          <Select value={pickupSubject} onValueChange={onPickupChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select subject to pick up..." />
-            </SelectTrigger>
-            <SelectContent>
-              {pickupOptions.map((code) => (
-                <SelectItem key={code} value={code}>
-                  {code}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Popover open={pickupOpen} onOpenChange={setPickupOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={pickupOpen}
+                className="w-full justify-between font-normal"
+                disabled={!dropSubject}
+              >
+                {pickupSubject && isPickupValid ? (
+                  <span>
+                    {pickupSubject}
+                    <span className="ml-2 text-muted-foreground text-xs">
+                      {selectedPickupOption?.isYearLong ? "Year" : "Semester"}
+                    </span>
+                  </span>
+                ) : (
+                  <span className="text-muted-foreground">
+                    {!dropSubject
+                      ? "Select drop subject first..."
+                      : "Select subject to pick up..."}
+                  </span>
+                )}
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[250px] p-0" align="start">
+              <Command>
+                <CommandInput placeholder="Search subjects..." />
+                <CommandList>
+                  <CommandEmpty>No matching subjects found.</CommandEmpty>
+                  <CommandGroup>
+                    {pickupOptions.map((option) => (
+                      <CommandItem
+                        key={option.code}
+                        value={option.code}
+                        onSelect={(value) => {
+                          onPickupChange(value === pickupSubject ? "" : value);
+                          setPickupOpen(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            pickupSubject === option.code
+                              ? "opacity-100"
+                              : "opacity-0"
+                          )}
+                        />
+                        <span className="font-mono">{option.code}</span>
+                        <span className="ml-2 text-muted-foreground text-xs">
+                          {option.isYearLong ? "Year" : "Semester"}
+                        </span>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
+
+      {/* Info message about duration filtering */}
+      {dropSubject && (
+        <p className="text-xs text-muted-foreground">
+          Showing {droppedSubjectInfo?.isYearLong ? "year-long" : "semester"}{" "}
+          subjects only (matching drop subject duration)
+        </p>
+      )}
 
       {/* Validation message */}
       {dropSubject && pickupSubject && dropSubject === pickupSubject && (

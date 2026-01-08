@@ -41,6 +41,7 @@ describe("validation", () => {
       expect(result.valid).toBe(true);
       expect(result.missingSlots).toHaveLength(0);
       expect(result.conflicts).toHaveLength(0);
+      expect(result.duplicateSubjects).toHaveLength(0);
     });
 
     it("should validate a schedule with semester subjects", () => {
@@ -156,6 +157,260 @@ describe("validation", () => {
 
       expect(result.valid).toBe(false);
       expect(result.missingSlots).toHaveLength(12); // 6 allocations × 2 semesters
+      expect(result.duplicateSubjects).toHaveLength(0);
+    });
+
+    it("should detect duplicate subjects (same subject, different class)", () => {
+      const schedule: Subject[] = [
+        createSubject({
+          allocation: "AL1",
+          code: "10ENG1",
+          subject: "ENG",
+          semester: "both",
+        }),
+        createSubject({
+          allocation: "AL2",
+          code: "10MTA1",
+          subject: "MTA",
+          semester: "both",
+        }),
+        createSubject({
+          allocation: "AL3",
+          code: "10MTG1",
+          subject: "MTG",
+          semester: "both",
+        }),
+        createSubject({
+          allocation: "AL4",
+          code: "10SCI1",
+          subject: "SCI",
+          semester: "both",
+        }),
+        createSubject({
+          allocation: "AL5",
+          code: "10ART1",
+          subject: "ART",
+          semester: "both",
+        }),
+        createSubject({
+          allocation: "AL6",
+          code: "10ART2",
+          subject: "ART",
+          semester: "both",
+        }), // Duplicate!
+      ];
+
+      const result = validateStudentSchedule(schedule);
+
+      expect(result.valid).toBe(false);
+      expect(result.duplicateSubjects).toHaveLength(1);
+      expect(result.duplicateSubjects[0].levelSubject).toBe("10ART");
+      expect(result.duplicateSubjects[0].classes).toContain("10ART1");
+      expect(result.duplicateSubjects[0].classes).toContain("10ART2");
+    });
+
+    it("should detect multiple duplicate subjects", () => {
+      const schedule: Subject[] = [
+        createSubject({
+          allocation: "AL1",
+          code: "10ENG1",
+          subject: "ENG",
+          semester: "both",
+        }),
+        createSubject({
+          allocation: "AL2",
+          code: "10ENG2",
+          subject: "ENG",
+          semester: "both",
+        }), // Dup ENG
+        createSubject({
+          allocation: "AL3",
+          code: "10MTG1",
+          subject: "MTG",
+          semester: "both",
+        }),
+        createSubject({
+          allocation: "AL4",
+          code: "10SCI1",
+          subject: "SCI",
+          semester: "both",
+        }),
+        createSubject({
+          allocation: "AL5",
+          code: "10ART1",
+          subject: "ART",
+          semester: "both",
+        }),
+        createSubject({
+          allocation: "AL6",
+          code: "10ART2",
+          subject: "ART",
+          semester: "both",
+        }), // Dup ART
+      ];
+
+      const result = validateStudentSchedule(schedule);
+
+      expect(result.valid).toBe(false);
+      expect(result.duplicateSubjects).toHaveLength(2);
+
+      const engDup = result.duplicateSubjects.find(
+        (d) => d.levelSubject === "10ENG"
+      );
+      expect(engDup).toBeDefined();
+      expect(engDup!.classes).toHaveLength(2);
+
+      const artDup = result.duplicateSubjects.find(
+        (d) => d.levelSubject === "10ART"
+      );
+      expect(artDup).toBeDefined();
+      expect(artDup!.classes).toHaveLength(2);
+    });
+
+    it("should detect three classes of same subject as duplicate", () => {
+      const schedule: Subject[] = [
+        createSubject({
+          allocation: "AL1",
+          code: "10ENG1",
+          subject: "ENG",
+          semester: "both",
+        }),
+        createSubject({
+          allocation: "AL2",
+          code: "10ENG2",
+          subject: "ENG",
+          semester: "both",
+        }),
+        createSubject({
+          allocation: "AL3",
+          code: "10ENG3",
+          subject: "ENG",
+          semester: "both",
+        }),
+        createSubject({
+          allocation: "AL4",
+          code: "10SCI1",
+          subject: "SCI",
+          semester: "both",
+        }),
+        createSubject({
+          allocation: "AL5",
+          code: "10HIS1",
+          subject: "HIS",
+          semester: "both",
+        }),
+        createSubject({
+          allocation: "AL6",
+          code: "10GEO1",
+          subject: "GEO",
+          semester: "both",
+        }),
+      ];
+
+      const result = validateStudentSchedule(schedule);
+
+      expect(result.valid).toBe(false);
+      expect(result.duplicateSubjects).toHaveLength(1);
+      expect(result.duplicateSubjects[0].levelSubject).toBe("10ENG");
+      expect(result.duplicateSubjects[0].classes).toHaveLength(3);
+    });
+
+    it("should not flag different levels of same subject as duplicates", () => {
+      // 10ENG and 11ENG are different subjects
+      const schedule: Subject[] = [
+        createSubject({
+          allocation: "AL1",
+          code: "10ENG1",
+          level: 10,
+          subject: "ENG",
+          semester: "both",
+        }),
+        createSubject({
+          allocation: "AL2",
+          code: "11ENG1",
+          level: 11,
+          subject: "ENG",
+          semester: "both",
+        }),
+        createSubject({
+          allocation: "AL3",
+          code: "10MTG1",
+          subject: "MTG",
+          semester: "both",
+        }),
+        createSubject({
+          allocation: "AL4",
+          code: "10SCI1",
+          subject: "SCI",
+          semester: "both",
+        }),
+        createSubject({
+          allocation: "AL5",
+          code: "10HIS1",
+          subject: "HIS",
+          semester: "both",
+        }),
+        createSubject({
+          allocation: "AL6",
+          code: "10GEO1",
+          subject: "GEO",
+          semester: "both",
+        }),
+      ];
+
+      const result = validateStudentSchedule(schedule);
+
+      expect(result.valid).toBe(true);
+      expect(result.duplicateSubjects).toHaveLength(0);
+    });
+
+    it("should detect duplicates even with other validation errors", () => {
+      const schedule: Subject[] = [
+        createSubject({
+          allocation: "AL1",
+          code: "10ENG1",
+          subject: "ENG",
+          semester: "both",
+        }),
+        createSubject({
+          allocation: "AL2",
+          code: "10MTA1",
+          subject: "MTA",
+          semester: "both",
+        }),
+        createSubject({
+          allocation: "AL3",
+          code: "10MTG1",
+          subject: "MTG",
+          semester: "both",
+        }),
+        createSubject({
+          allocation: "AL4",
+          code: "10SCI1",
+          subject: "SCI",
+          semester: "both",
+        }),
+        createSubject({
+          allocation: "AL5",
+          code: "10ART1",
+          subject: "ART",
+          semester: "both",
+        }),
+        createSubject({
+          allocation: "AL5",
+          code: "10ART2",
+          subject: "ART",
+          semester: "both",
+        }), // Dup ART + conflict
+        // Missing AL6
+      ];
+
+      const result = validateStudentSchedule(schedule);
+
+      expect(result.valid).toBe(false);
+      expect(result.missingSlots.length).toBeGreaterThan(0); // Missing AL6
+      expect(result.conflicts.length).toBeGreaterThan(0); // AL5 conflict
+      expect(result.duplicateSubjects).toHaveLength(1); // 10ART duplicate
     });
   });
 

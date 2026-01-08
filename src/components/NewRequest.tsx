@@ -65,6 +65,14 @@ export function NewRequest({ onSubmit, initialData }: NewRequestProps) {
     }
   }, [initialData]);
 
+  // Handle student subject changes - reset drop/pickup when user changes subjects
+  const handleSelectedCodesChange = (newCodes: string[]) => {
+    setSelectedCodes(newCodes);
+    // Reset drop/pickup since the student's subjects changed
+    setDropSubject("");
+    setPickupSubject("");
+  };
+
   // Get selected Subject objects and validate
   const selectedSubjects = useMemo(() => {
     return subjects.filter((s) => selectedCodes.includes(s.code));
@@ -84,12 +92,6 @@ export function NewRequest({ onSubmit, initialData }: NewRequestProps) {
       pickupSubject,
     });
   };
-
-  // Reset drop/pickup when student subjects change
-  useEffect(() => {
-    setDropSubject("");
-    setPickupSubject("");
-  }, [selectedCodes]);
 
   return (
     <Card className="mx-auto max-w-2xl">
@@ -151,7 +153,7 @@ export function NewRequest({ onSubmit, initialData }: NewRequestProps) {
               <StudentSubjectInput
                 subjects={subjects}
                 selectedCodes={selectedCodes}
-                onChange={setSelectedCodes}
+                onChange={handleSelectedCodesChange}
               />
             </div>
 
