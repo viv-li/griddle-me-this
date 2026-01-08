@@ -1,4 +1,5 @@
-import { ArrowLeft, XCircle } from "lucide-react";
+import { useMemo } from "react";
+import { ArrowLeft, XCircle, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,7 +12,7 @@ import { SolutionCard } from "@/components/SolutionCard";
 import { AlternativeSuggestions } from "@/components/AlternativeSuggestions";
 import { RequestCard } from "@/components/RequestCard";
 import { TimetableGrid } from "@/components/TimetableGrid";
-import { loadTimetable } from "@/lib/storage";
+import { loadTimetable, getMissingSubjectCodes } from "@/lib/storage";
 import type { ChangeRequest, Solution, Subject } from "@/types";
 
 interface ResultsDisplayProps {
@@ -64,6 +65,12 @@ export function ResultsDisplay({
     ? timetable.subjects.filter((s) => request.studentSubjects.includes(s.code))
     : [];
 
+  // Check for subject codes that don't exist in current timetable
+  const missingSubjectCodes = useMemo(
+    () => getMissingSubjectCodes(request, timetable),
+    [timetable, request]
+  );
+
   const allSubjects = timetable?.subjects || [];
   const hasSolutions = solutions.length > 0;
 
@@ -78,12 +85,35 @@ export function ResultsDisplay({
       <RequestCard
         request={request}
         isStale={isStale}
+        missingSubjectCodes={missingSubjectCodes}
         hasSolutions={hasSolutions}
         onLabelChange={onLabelChange}
         onRerun={isStale ? onRerun : undefined}
         onClone={onClone}
         onDelete={onDelete}
       />
+
+      {/* Warning for missing subject codes */}
+      {missingSubjectCodes.length > 0 && (
+        <div className="flex items-start gap-3 rounded-lg bg-amber-50 border border-amber-200 p-4 text-sm text-amber-800">
+          <AlertTriangle className="h-5 w-5 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="font-medium">Some subjects not found</p>
+            <p className="mt-1 text-amber-700">
+              The following subject codes were not found in the current
+              timetable:{" "}
+              <span className="font-mono">
+                {missingSubjectCodes.join(", ")}
+              </span>
+              . Results may be inaccurate.
+            </p>
+            <p className="mt-2 text-xs text-amber-600">
+              Consider cloning this request and updating the student's subjects,
+              or re-uploading an older compatible version of the timetable.
+            </p>
+          </div>
+        </div>
+      )}
 
       {hasSolutions ? (
         <>

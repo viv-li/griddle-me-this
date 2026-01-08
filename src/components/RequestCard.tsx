@@ -23,6 +23,8 @@ interface RequestCardProps {
   request: ChangeRequest;
   /** Whether the request data is stale (timetable has been updated) */
   isStale?: boolean;
+  /** Subject codes that don't exist in current timetable */
+  missingSubjectCodes?: string[];
   /** Whether solutions were found */
   hasSolutions?: boolean;
   /** Whether to show rerun success indicator */
@@ -46,6 +48,7 @@ interface RequestCardProps {
 export function RequestCard({
   request,
   isStale = false,
+  missingSubjectCodes = [],
   hasSolutions = false,
   rerunSuccess = false,
   onClick,
@@ -54,6 +57,9 @@ export function RequestCard({
   onClone,
   onDelete,
 }: RequestCardProps) {
+  const hasMissingSubjects = missingSubjectCodes.length > 0;
+  const canRerun = isStale && !hasMissingSubjects;
+
   const formatDate = (isoString: string) => {
     return new Date(isoString).toLocaleString(undefined, {
       month: "short",
@@ -126,7 +132,28 @@ export function RequestCard({
                   Updated
                 </Badge>
               )}
-              {isStale && !rerunSuccess && (
+              {hasMissingSubjects && !rerunSuccess && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Badge
+                      variant="outline"
+                      className="text-red-600 border-red-300 bg-red-50 shrink-0 cursor-help"
+                    >
+                      Incompatible
+                    </Badge>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p>
+                      Request incompatible with current timetable. Missing
+                      subjects:{" "}
+                      <span className="font-mono">
+                        {missingSubjectCodes.join(", ")}
+                      </span>
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+              {isStale && !hasMissingSubjects && !rerunSuccess && (
                 <Badge
                   variant="outline"
                   className="text-amber-600 border-amber-300 bg-amber-50 shrink-0"
@@ -134,7 +161,7 @@ export function RequestCard({
                   Outdated
                 </Badge>
               )}
-              {isStale && !rerunSuccess && onRerun && (
+              {canRerun && !rerunSuccess && onRerun && (
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button

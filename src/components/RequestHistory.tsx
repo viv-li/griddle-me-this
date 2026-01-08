@@ -13,6 +13,7 @@ import {
   loadTimetable,
   deleteRequest,
   updateRequest,
+  getMissingSubjectCodes,
 } from "@/lib/storage";
 import { findSolutions, rankSolutions } from "@/lib/timetableAlgorithm";
 import type { ChangeRequest, Solution, TimetableData } from "@/types";
@@ -64,6 +65,11 @@ export function RequestHistory({
   const handleSelectRequest = (request: ChangeRequest) => {
     if (!timetable) return;
 
+    // Clear the rerun success indicator when viewing the request
+    if (rerunSuccessId === request.id) {
+      setRerunSuccessId(null);
+    }
+
     // Get the student's schedule from the saved subject codes
     const studentSchedule = timetable.subjects.filter((s) =>
       request.studentSubjects.includes(s.code)
@@ -96,9 +102,8 @@ export function RequestHistory({
       requests.map((r) => (r.id === request.id ? updatedRequest : r))
     );
 
-    // Show success indicator temporarily
+    // Show success indicator (cleared when user views the request)
     setRerunSuccessId(request.id);
-    setTimeout(() => setRerunSuccessId(null), 2000);
   };
 
   const handleLabelChange = (requestId: string, newLabel: string) => {
@@ -144,24 +149,28 @@ export function RequestHistory({
         </Card>
       ) : (
         <div className="space-y-3">
-          {requests.map((request) => (
-            <RequestCard
-              key={request.id}
-              request={request}
-              isStale={isStale(request)}
-              hasSolutions={solutionStatus.get(request.id) ?? false}
-              rerunSuccess={rerunSuccessId === request.id}
-              onClick={() => handleSelectRequest(request)}
-              onLabelChange={(newLabel) =>
-                handleLabelChange(request.id, newLabel)
-              }
-              onRerun={
-                isStale(request) ? () => handleRerun(request) : undefined
-              }
-              onClone={() => onCloneRequest(request)}
-              onDelete={() => handleDelete(request.id)}
-            />
-          ))}
+          {requests.map((request) => {
+            const missingCodes = getMissingSubjectCodes(request, timetable);
+            return (
+              <RequestCard
+                key={request.id}
+                request={request}
+                isStale={isStale(request)}
+                missingSubjectCodes={missingCodes}
+                hasSolutions={solutionStatus.get(request.id) ?? false}
+                rerunSuccess={rerunSuccessId === request.id}
+                onClick={() => handleSelectRequest(request)}
+                onLabelChange={(newLabel) =>
+                  handleLabelChange(request.id, newLabel)
+                }
+                onRerun={
+                  isStale(request) ? () => handleRerun(request) : undefined
+                }
+                onClone={() => onCloneRequest(request)}
+                onDelete={() => handleDelete(request.id)}
+              />
+            );
+          })}
         </div>
       )}
     </div>

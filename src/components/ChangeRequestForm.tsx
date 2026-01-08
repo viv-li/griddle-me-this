@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { getLevelSubjectCode } from "@/lib/timetableUtils";
-import type { Subject, Semester } from "@/types";
+import type { Subject } from "@/types";
 
 interface ChangeRequestFormProps {
   /** All subjects in the timetable */
@@ -59,6 +59,7 @@ export function ChangeRequestForm({
 }: ChangeRequestFormProps) {
   const [dropOpen, setDropOpen] = useState(false);
   const [pickupOpen, setPickupOpen] = useState(false);
+  const [pickupSearch, setPickupSearch] = useState("");
 
   // Build drop options with year-long info from student's subjects
   const dropOptions = useMemo(() => {
@@ -117,8 +118,26 @@ export function ChangeRequestForm({
   }, [allSubjects, studentSubjects, droppedSubjectInfo]);
 
   // Clear pickup if it's no longer valid after drop changes
-  const selectedPickupOption = pickupOptions.find((o) => o.code === pickupSubject);
+  const selectedPickupOption = pickupOptions.find(
+    (o) => o.code === pickupSubject
+  );
   const isPickupValid = !pickupSubject || selectedPickupOption;
+
+  // Check if search matches an enrolled subject (for better empty state message)
+  const studentSubjectCodes = useMemo(
+    () => new Set(studentSubjects.map((s) => getLevelSubjectCode(s.code))),
+    [studentSubjects]
+  );
+  const searchMatchesEnrolled = useMemo(() => {
+    if (!pickupSearch) return null;
+    const searchUpper = pickupSearch.toUpperCase();
+    for (const code of studentSubjectCodes) {
+      if (code.toUpperCase().includes(searchUpper)) {
+        return code;
+      }
+    }
+    return null;
+  }, [pickupSearch, studentSubjectCodes]);
 
   const canSubmit =
     dropSubject &&
@@ -126,10 +145,6 @@ export function ChangeRequestForm({
     isPickupValid &&
     dropSubject !== pickupSubject &&
     !disabled;
-
-  const formatLabel = (option: SubjectOption) => {
-    return `${option.code} · ${option.isYearLong ? "Year" : "Semester"}`;
-  };
 
   return (
     <div className="space-y-4">
@@ -236,9 +251,21 @@ export function ChangeRequestForm({
             </PopoverTrigger>
             <PopoverContent className="w-[250px] p-0" align="start">
               <Command>
-                <CommandInput placeholder="Search subjects..." />
+                <CommandInput
+                  placeholder="Search subjects..."
+                  value={pickupSearch}
+                  onValueChange={setPickupSearch}
+                />
                 <CommandList>
-                  <CommandEmpty>No matching subjects found.</CommandEmpty>
+                  <CommandEmpty>
+                    {searchMatchesEnrolled ? (
+                      <span className="text-amber-600">
+                        Already enrolled in {searchMatchesEnrolled}
+                      </span>
+                    ) : (
+                      "No matching subjects found."
+                    )}
+                  </CommandEmpty>
                   <CommandGroup>
                     {pickupOptions.map((option) => (
                       <CommandItem
@@ -246,6 +273,7 @@ export function ChangeRequestForm({
                         value={option.code}
                         onSelect={(value) => {
                           onPickupChange(value === pickupSubject ? "" : value);
+                          setPickupSearch("");
                           setPickupOpen(false);
                         }}
                       >

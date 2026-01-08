@@ -106,3 +106,20 @@ export function deleteRequest(id: string): void {
   const filtered = requests.filter((r) => r.id !== id);
   saveRequests(filtered);
 }
+
+// =============================================================================
+// Request Validation Helpers
+// =============================================================================
+
+/**
+ * Get subject codes from a request that don't exist in the current timetable.
+ * Returns empty array if all subjects exist or no timetable is loaded.
+ */
+export function getMissingSubjectCodes(
+  request: ChangeRequest,
+  timetable: TimetableData | null
+): string[] {
+  if (!timetable) return [];
+  const availableCodes = new Set(timetable.subjects.map((s) => s.code));
+  return request.studentSubjects.filter((code) => !availableCodes.has(code));
+}

@@ -4,6 +4,7 @@ import { TimetableUpload } from "@/components/TimetableUpload";
 import { NewRequest } from "@/components/NewRequest";
 import { ResultsDisplay } from "@/components/ResultsDisplay";
 import { RequestHistory } from "@/components/RequestHistory";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -210,68 +211,70 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <h1
-            className="cursor-pointer text-xl font-bold"
-            onClick={() => setCurrentView("upload")}
-          >
-            Griddle Me This
-          </h1>
-          <NavigationMenu>
-            <NavigationMenuList>
-              <NavigationMenuItem>
-                <NavigationMenuLink
-                  className={cn(
-                    navigationMenuTriggerStyle(),
-                    "cursor-pointer",
-                    currentView === "upload" &&
-                      "bg-accent text-accent-foreground"
-                  )}
-                  onClick={() => setCurrentView("upload")}
-                >
-                  <Upload className="mr-2 h-4 w-4" />
-                  Timetable
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
-                <NavigationMenuLink
-                  className={cn(
-                    navigationMenuTriggerStyle(),
-                    "cursor-pointer",
-                    currentView === "newRequest" &&
-                      "bg-accent text-accent-foreground"
-                  )}
-                  onClick={() => setCurrentView("newRequest")}
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  New Request
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
-                <NavigationMenuLink
-                  className={cn(
-                    navigationMenuTriggerStyle(),
-                    "cursor-pointer",
-                    currentView === "history" &&
-                      "bg-accent text-accent-foreground"
-                  )}
-                  onClick={() => setCurrentView("history")}
-                >
-                  <History className="mr-2 h-4 w-4" />
-                  All Requests
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-            </NavigationMenuList>
-          </NavigationMenu>
-        </div>
-      </header>
+    <ErrorBoundary>
+      <div className="min-h-screen bg-background">
+        {/* Header */}
+        <header className="border-b">
+          <div className="container mx-auto flex h-16 items-center justify-between px-4">
+            <h1
+              className="cursor-pointer text-xl font-bold"
+              onClick={() => setCurrentView("upload")}
+            >
+              Griddle Me This
+            </h1>
+            <NavigationMenu>
+              <NavigationMenuList>
+                <NavigationMenuItem>
+                  <NavigationMenuLink
+                    className={cn(
+                      navigationMenuTriggerStyle(),
+                      "cursor-pointer",
+                      currentView === "upload" &&
+                        "bg-accent text-accent-foreground"
+                    )}
+                    onClick={() => setCurrentView("upload")}
+                  >
+                    <Upload className="mr-2 h-4 w-4" />
+                    Timetable
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <NavigationMenuLink
+                    className={cn(
+                      navigationMenuTriggerStyle(),
+                      "cursor-pointer",
+                      currentView === "newRequest" &&
+                        "bg-accent text-accent-foreground"
+                    )}
+                    onClick={() => setCurrentView("newRequest")}
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    New Request
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <NavigationMenuLink
+                    className={cn(
+                      navigationMenuTriggerStyle(),
+                      "cursor-pointer",
+                      currentView === "history" &&
+                        "bg-accent text-accent-foreground"
+                    )}
+                    onClick={() => setCurrentView("history")}
+                  >
+                    <History className="mr-2 h-4 w-4" />
+                    All Requests
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+              </NavigationMenuList>
+            </NavigationMenu>
+          </div>
+        </header>
 
-      {/* Main Content */}
-      <main className="container mx-auto py-8">{renderView()}</main>
-    </div>
+        {/* Main Content */}
+        <main className="container mx-auto py-8">{renderView()}</main>
+      </div>
+    </ErrorBoundary>
   );
 }
 

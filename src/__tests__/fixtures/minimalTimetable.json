@@ -1,0 +1,142 @@
+[
+  {
+    "allocation": "AL1",
+    "code": "9SCI1",
+    "level": 9,
+    "subject": "SCI",
+    "class": 1,
+    "semester": "both",
+    "enrolled": 20,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL1",
+    "code": "9SCI2",
+    "level": 9,
+    "subject": "SCI",
+    "class": 2,
+    "semester": "both",
+    "enrolled": 22,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL2",
+    "code": "9MAT1",
+    "level": 9,
+    "subject": "MAT",
+    "class": 1,
+    "semester": "both",
+    "enrolled": 18,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL2",
+    "code": "9MAT2",
+    "level": 9,
+    "subject": "MAT",
+    "class": 2,
+    "semester": "both",
+    "enrolled": 24,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL3",
+    "code": "9ENG1",
+    "level": 9,
+    "subject": "ENG",
+    "class": 1,
+    "semester": "both",
+    "enrolled": 21,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL3",
+    "code": "9ENG2",
+    "level": 9,
+    "subject": "ENG",
+    "class": 2,
+    "semester": "both",
+    "enrolled": 19,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL4",
+    "code": "9GEO1",
+    "level": 9,
+    "subject": "GEO",
+    "class": 1,
+    "semester": "both",
+    "enrolled": 23,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL4",
+    "code": "9HIS1",
+    "level": 9,
+    "subject": "HIS",
+    "class": 1,
+    "semester": "both",
+    "enrolled": 20,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL5",
+    "code": "9ART1",
+    "level": 9,
+    "subject": "ART",
+    "class": 1,
+    "semester": "sem1",
+    "enrolled": 15,
+    "capacity": 20
+  },
+  {
+    "allocation": "AL5",
+    "code": "9MUS1",
+    "level": 9,
+    "subject": "MUS",
+    "class": 1,
+    "semester": "sem2",
+    "enrolled": 12,
+    "capacity": 20
+  },
+  {
+    "allocation": "AL5",
+    "code": "9DRA1",
+    "level": 9,
+    "subject": "DRA",
+    "class": 1,
+    "semester": "sem1",
+    "enrolled": 18,
+    "capacity": 20
+  },
+  {
+    "allocation": "AL5",
+    "code": "9TEC1",
+    "level": 9,
+    "subject": "TEC",
+    "class": 1,
+    "semester": "sem2",
+    "enrolled": 16,
+    "capacity": 20
+  },
+  {
+    "allocation": "AL6",
+    "code": "9PED1",
+    "level": 9,
+    "subject": "PED",
+    "class": 1,
+    "semester": "both",
+    "enrolled": 25,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL6",
+    "code": "9PED2",
+    "level": 9,
+    "subject": "PED",
+    "class": 2,
+    "semester": "both",
+    "enrolled": 22,
+    "capacity": 25
+  }
+]
