@@ -11,28 +11,31 @@ flowchart LR
         Form[ChangeRequestForm]
         Results[ResultsDisplay]
     end
-    
+
     subgraph logic [Logic Layer]
         Algorithm[timetableAlgorithm.ts]
+        Utils[timetableUtils.ts]
         Validation[validation.ts]
         Storage[storage.ts]
     end
-    
+
     subgraph data [Data Layer]
         LS[(LocalStorage)]
     end
-    
+
     Upload --> Storage
     History --> Storage
     Input --> Validation
     Form --> Algorithm
+    Algorithm --> Utils
+    Validation --> Utils
     Results --> Storage
     Storage --> LS
 ```
 
 ---
 
-## Phase 1: Foundation
+## Phase 1: Foundation ✅
 
 ### 1.1 Project Setup
 
@@ -52,39 +55,44 @@ flowchart LR
 - Create [`src/App.tsx`](src/App.tsx) with basic view structure
 - Simple state-based navigation between views: Upload, NewRequest, Results, History
 - Placeholder components for each view (to be replaced in later phases)
-- Allows visual progress tracking from day one
 
 ### 1.4 README Documentation
 
-- Create [`README.md`](README.md) with:
-  - Project overview and purpose
-  - Prerequisites (Node.js version)
-  - Installation (`npm install`)
-  - Development server (`npm run dev`)
-  - Running tests (`npm test`, `npm run test:watch`)
-  - Building for production (`npm run build`)
-  - Project structure overview
+- Create [`README.md`](README.md) with build, run, and test instructions
 
 ---
 
-## Phase 2: Core Logic with Tests (TDD)
+## Phase 2: Core Logic with Tests (TDD) ✅
 
 Build and test core logic together - each module with its test file.
 
-### 2.1 Test Fixtures
+### 2.1 Test Fixtures & Utilities
 
-- Create [`src/__tests__/fixtures/sampleTimetable.json`](src/__tests__/fixtures/sampleTimetable.json) with provided sample data (111 subjects)
-- Create test helper functions for building student schedules
+**Test fixtures** (for test setup only):
+
+- Create [`src/__tests__/fixtures/sampleTimetable.json`](src/__tests__/fixtures/sampleTimetable.json) with sample data (118 subjects)
+- Create [`src/__tests__/helpers/testHelpers.ts`](src/__tests__/helpers/testHelpers.ts):
+  - `loadSampleTimetable()` - load fixture as typed array
+  - `buildStudentSchedule()` - build schedule from subject codes
+
+**Utility functions** (application code):
+
+- Create [`src/lib/timetableUtils.ts`](src/lib/timetableUtils.ts):
+  - `getLevelSubjectCode()` - extract level+subject from class code (e.g., "10ENG1" → "10ENG")
+  - `findSubjectClasses()` - find all classes of a subject (e.g., all 10ENG classes)
+- Create [`src/__tests__/timetableUtils.test.ts`](src/__tests__/timetableUtils.test.ts) with unit tests
 
 ### 2.2 Storage Module
 
 - Create [`src/lib/storage.ts`](src/lib/storage.ts):
   - `saveTimetable()`, `loadTimetable()`
   - `saveRequests()`, `loadRequests()`
+  - `addRequest()`, `updateRequest()`, `deleteRequest()`
   - `updateTimetableEnrollment()` for applying solutions
 - Create [`src/__tests__/storage.test.ts`](src/__tests__/storage.test.ts):
   - Save and load roundtrip
   - Handle missing/corrupted data gracefully
+  - Request CRUD operations
   - Enrollment update logic
 
 ### 2.3 Validation Module
@@ -92,21 +100,22 @@ Build and test core logic together - each module with its test file.
 - Create [`src/lib/validation.ts`](src/lib/validation.ts):
   - `validateTimetableJSON()` - check uploaded file structure
   - `validateStudentSchedule()` - ensure 6 allocations filled for both semesters
-  - `getStudentSubjectCodes()` - extract level+subject codes from student's classes (used by UI to filter pickup options)
+  - `getStudentSubjects()` - extract unique level+subject codes from schedule
 - Create [`src/__tests__/validation.test.ts`](src/__tests__/validation.test.ts):
   - Valid timetable JSON structure
   - Invalid/malformed JSON rejection
   - Valid student schedule (6 allocations filled, both semesters)
   - Invalid schedule detection (missing allocations, semester conflicts)
-  - Subject code extraction for filtering
 
 ### 2.4 Algorithm Module - State & Conflicts
 
 - Create [`src/lib/timetableAlgorithm.ts`](src/lib/timetableAlgorithm.ts) (part 1):
-  - `TimetableState` type representing a student's current schedule
+  - `Conflict` type for conflict information
   - `findConflicts()` - detect allocation/semester conflicts when adding a class
+  - `canAddClass()` - check if class can be added without conflicts
   - `getAlternativeClasses()` - find other classes of same subject in different allocations
-- Add tests to [`src/__tests__/timetableAlgorithm.test.ts`](src/__tests__/timetableAlgorithm.test.ts):
+  - `findNonConflictingAlternatives()` - find alternatives that fit the schedule
+- Create [`src/__tests__/timetableAlgorithm.test.ts`](src/__tests__/timetableAlgorithm.test.ts):
   - Conflict detection for year-long vs semester subjects
   - Finding alternatives across allocations
 
@@ -126,12 +135,20 @@ Build and test core logic together - each module with its test file.
 ### 2.6 Algorithm Module - Capacity & Ranking
 
 - Extend [`src/lib/timetableAlgorithm.ts`](src/lib/timetableAlgorithm.ts) (part 3):
-  - `checkCapacity()` - account for student's own movements
+  - `checkCapacity()` - account for student's own movements when checking capacity
   - `rankSolutions()` - sort by (no warnings first, then fewest changes)
 - Add tests:
   - Capacity calculation with student leaving/joining
+  - Leaving over-capacity class doesn't warn
   - Solutions with/without capacity warnings
   - Ranking order verification
+
+### 2.7 Integration Tests
+
+- Create [`src/__tests__/timetableAlgorithm.integration.test.ts`](src/__tests__/timetableAlgorithm.integration.test.ts):
+  - Test full pipeline with real sample timetable data
+  - Verify `findSolutions` → `checkCapacity` → `rankSolutions` flow
+  - Test realistic drop/pickup scenarios
 
 ---
 
@@ -273,24 +290,32 @@ Wire up UI components to the App shell - end-to-end flow testable after this pha
 
 ## Key Files Summary
 
-| File | Purpose |
-|------|---------|
-| `README.md` | Build, run, and test instructions |
-| `src/types/index.ts` | All TypeScript interfaces |
-| `src/lib/storage.ts` | LocalStorage CRUD operations |
-| `src/lib/validation.ts` | Data validation functions |
-| `src/lib/timetableAlgorithm.ts` | BFS solution finder |
-| `src/__tests__/fixtures/sampleTimetable.json` | Test fixture (111 subjects) |
-| `src/__tests__/storage.test.ts` | Storage unit tests |
-| `src/__tests__/validation.test.ts` | Validation unit tests |
-| `src/__tests__/timetableAlgorithm.test.ts` | Algorithm unit tests |
-| `src/components/TimetableUpload.tsx` | JSON upload UI |
-| `src/components/StudentSubjectInput.tsx` | Subject entry autocomplete |
-| `src/components/ChangeRequestForm.tsx` | Drop/pickup selection |
-| `src/components/TimetableGrid.tsx` | Visual schedule grid |
-| `src/components/ChangeSteps.tsx` | Numbered change list |
-| `src/components/SolutionCard.tsx` | Single solution display |
-| `src/components/AlternativeSuggestions.tsx` | No-solution alternatives |
-| `src/components/ResultsDisplay.tsx` | Results container |
-| `src/components/RequestHistory.tsx` | Past requests list |
-| `src/App.tsx` | Main app shell and navigation |
+| File                                          | Purpose                                  |
+| --------------------------------------------- | ---------------------------------------- |
+| `README.md`                                   | Build, run, and test instructions        |
+| `src/types/index.ts`                          | All TypeScript interfaces                |
+| `src/lib/timetableUtils.ts`                   | Subject utility functions                |
+| `src/lib/storage.ts`                          | LocalStorage CRUD operations             |
+| `src/lib/validation.ts`                       | Data validation functions                |
+| `src/lib/timetableAlgorithm.ts`               | BFS solution finder + capacity + ranking |
+| `src/__tests__/fixtures/sampleTimetable.json` | Test fixture (118 subjects)              |
+| `src/__tests__/helpers/testHelpers.ts`        | Test setup helpers                       |
+| `src/__tests__/*.test.ts`                     | Unit tests                               |
+| `src/__tests__/*.integration.test.ts`         | Integration tests                        |
+| `src/components/TimetableUpload.tsx`          | JSON upload UI                           |
+| `src/components/StudentSubjectInput.tsx`      | Subject entry autocomplete               |
+| `src/components/ChangeRequestForm.tsx`        | Drop/pickup selection                    |
+| `src/components/TimetableGrid.tsx`            | Visual schedule grid                     |
+| `src/components/ChangeSteps.tsx`              | Numbered change list                     |
+| `src/components/SolutionCard.tsx`             | Single solution display                  |
+| `src/components/AlternativeSuggestions.tsx`   | No-solution alternatives                 |
+| `src/components/ResultsDisplay.tsx`           | Results container                        |
+| `src/components/RequestHistory.tsx`           | Past requests list                       |
+| `src/App.tsx`                                 | Main app shell and navigation            |
+
+---
+
+## Test File Conventions
+
+- `*.test.ts` - Unit tests (self-contained with inline test data)
+- `*.integration.test.ts` - Integration tests (use real sample data from fixtures)

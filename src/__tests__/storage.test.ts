@@ -5,13 +5,11 @@
 import {
   saveTimetable,
   loadTimetable,
-  clearTimetable,
   saveRequests,
   loadRequests,
   addRequest,
   updateRequest,
   deleteRequest,
-  clearRequests,
   updateTimetableEnrollment,
 } from "../lib/storage";
 import type { TimetableData, ChangeRequest } from "../types";
@@ -106,16 +104,6 @@ describe("storage", () => {
         const loaded = loadTimetable();
 
         expect(loaded).toBeNull();
-      });
-    });
-
-    describe("clearTimetable", () => {
-      it("should remove timetable from storage", () => {
-        saveTimetable(sampleTimetable);
-        expect(loadTimetable()).not.toBeNull();
-
-        clearTimetable();
-        expect(loadTimetable()).toBeNull();
       });
     });
   });
@@ -231,17 +219,6 @@ describe("storage", () => {
 
         const loaded = loadRequests();
         expect(loaded).toHaveLength(1);
-      });
-    });
-
-    describe("clearRequests", () => {
-      it("should remove all requests from storage", () => {
-        addRequest(sampleRequest);
-        addRequest({ ...sampleRequest, id: "req-2" });
-        expect(loadRequests()).toHaveLength(2);
-
-        clearRequests();
-        expect(loadRequests()).toEqual([]);
       });
     });
   });

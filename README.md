@@ -69,10 +69,15 @@ src/
 ├── lib/                  # Core logic
 │   ├── storage.ts       # LocalStorage helpers
 │   ├── validation.ts    # Data validation
-│   └── timetableAlgorithm.ts  # BFS solver
+│   ├── timetableUtils.ts    # Subject utility functions
+│   └── timetableAlgorithm.ts  # BFS solver + capacity + ranking
 ├── types/               # TypeScript interfaces
 │   └── index.ts
 ├── __tests__/           # Test files
+│   ├── fixtures/        # Test data (sample timetable)
+│   ├── helpers/         # Test setup utilities
+│   ├── *.test.ts        # Unit tests
+│   └── *.integration.test.ts  # Integration tests
 └── App.tsx              # Main app component
 ```
 

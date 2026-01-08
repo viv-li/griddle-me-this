@@ -3,7 +3,7 @@
  * These are pure functions that operate on passed-in data
  */
 
-import type { Subject, AllocationBlock } from "../types";
+import type { Subject } from "../types";
 
 /**
  * Extract the level + subject code from a full class code
@@ -14,16 +14,6 @@ export function getLevelSubjectCode(classCode: string): string {
   const match = classCode.match(/^(\d+)([A-Z]+)/);
   if (!match) return classCode;
   return `${match[1]}${match[2]}`;
-}
-
-/**
- * Find a subject by its full class code
- */
-export function findSubjectByCode(
-  subjects: Subject[],
-  code: string
-): Subject | undefined {
-  return subjects.find((s) => s.code === code);
 }
 
 /**
@@ -39,21 +29,4 @@ export function findSubjectClasses(
   const subjectCode = levelSubject.replace(/^\d+/, "");
 
   return subjects.filter((s) => s.level === level && s.subject === subjectCode);
-}
-
-/**
- * Find all subjects in a specific allocation block
- */
-export function findSubjectsInAllocation(
-  subjects: Subject[],
-  allocation: AllocationBlock
-): Subject[] {
-  return subjects.filter((s) => s.allocation === allocation);
-}
-
-/**
- * Check if a subject/class has capacity available
- */
-export function hasCapacityAvailable(subject: Subject): boolean {
-  return subject.enrolled < subject.capacity;
 }

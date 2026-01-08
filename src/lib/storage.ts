@@ -44,13 +44,6 @@ export function loadTimetable(): TimetableData | null {
   }
 }
 
-/**
- * Clear timetable data from localStorage
- */
-export function clearTimetable(): void {
-  localStorage.removeItem(TIMETABLE_KEY);
-}
-
 // =============================================================================
 // Change Requests Storage
 // =============================================================================
@@ -112,13 +105,6 @@ export function deleteRequest(id: string): void {
   const requests = loadRequests();
   const filtered = requests.filter((r) => r.id !== id);
   saveRequests(filtered);
-}
-
-/**
- * Clear all change requests from localStorage
- */
-export function clearRequests(): void {
-  localStorage.removeItem(REQUESTS_KEY);
 }
 
 // =============================================================================

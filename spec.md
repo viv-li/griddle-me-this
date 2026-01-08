@@ -180,11 +180,17 @@ src/
 │   ├── SolutionCard.tsx          # Single solution with accept button
 │   └── AlternativeSuggestions.tsx
 ├── lib/
-│   ├── timetableAlgorithm.ts     # Core BFS solving algorithm
+│   ├── timetableAlgorithm.ts     # BFS solver, capacity checking, ranking
+│   ├── timetableUtils.ts         # Subject utility functions
 │   ├── validation.ts             # Timetable validity checks
 │   └── storage.ts                # LocalStorage helpers
 ├── types/
 │   └── index.ts                  # TypeScript interfaces
+├── __tests__/
+│   ├── fixtures/                 # Test data (sample timetable JSON)
+│   ├── helpers/                  # Test setup utilities
+│   ├── *.test.ts                 # Unit tests
+│   └── *.integration.test.ts     # Integration tests
 └── App.tsx
 ```
 
