@@ -331,6 +331,23 @@ Wire up UI components to the App shell - end-to-end flow testable after this pha
 
 ---
 
+## Phase 6: Deploy ✅
+
+### 6.1 GitHub Pages Setup
+
+- Configure Vite `base` path in [`vite.config.ts`](vite.config.ts) for GitHub Pages URL structure
+- Create GitHub Actions workflow at `.github/workflows/deploy.yml` for automated deployment
+- Workflow triggers on push to `main` branch
+- Uses `actions/deploy-pages` for native GitHub Pages integration
+
+### 6.2 Manual Configuration
+
+- Enable GitHub Pages in repository Settings → Pages
+- Set source to "GitHub Actions"
+- App deployed to `https://<username>.github.io/griddle-me-this/`
+
+---
+
 ## Key Files Summary
 
 | File                                          | Purpose                                  |

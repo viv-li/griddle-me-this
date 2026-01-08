@@ -58,6 +58,29 @@ Preview the production build:
 npm run preview
 ```
 
+## Deployment
+
+The app is configured for automatic deployment to GitHub Pages via GitHub Actions.
+
+### Setup
+
+1. Push your code to GitHub
+2. Go to **Settings → Pages** in your repository
+3. Set source to **GitHub Actions**
+4. Push to `main` branch to trigger deployment
+
+The app will be deployed to `https://<username>.github.io/griddle-me-this/`
+
+### Manual Deployment
+
+To deploy manually or to a different host:
+
+```bash
+npm run build
+```
+
+Upload the contents of the `dist/` folder to your static hosting provider.
+
 ## Project Structure
 
 ```
