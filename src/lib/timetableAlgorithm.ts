@@ -5,7 +5,7 @@
  * configurations when a student wants to change subjects.
  */
 
-import type { Subject, AllocationBlock } from "../types";
+import type { Subject, AllocationBlock, Solution, ClassChange } from "../types";
 import { getLevelSubjectCode, findSubjectClasses } from "./timetableUtils";
 
 // =============================================================================
@@ -163,4 +163,179 @@ export function findNonConflictingAlternatives(
 
   // Filter to those that don't conflict
   return alternatives.filter((alt) => canAddClass(scheduleWithoutSubject, alt));
+}
+
+// =============================================================================
+// BFS Solution Finder
+// =============================================================================
+
+/**
+ * State for BFS exploration
+ */
+interface BFSState {
+  /** Current schedule configuration */
+  schedule: Subject[];
+  /** Changes made to reach this state */
+  changes: ClassChange[];
+  /** The class we're still trying to place (null if successfully placed) */
+  pendingClass: Subject | null;
+}
+
+/**
+ * Create a unique key for a schedule state (for visited tracking)
+ */
+function getStateKey(schedule: Subject[]): string {
+  return schedule
+    .map((s) => s.code)
+    .sort()
+    .join(",");
+}
+
+/**
+ * Find all valid solutions for a subject change request.
+ *
+ * Uses BFS to explore all possible timetable rearrangements that would
+ * allow the student to drop one subject and pick up another.
+ *
+ * @param allSubjects - All subjects in the master timetable
+ * @param currentSchedule - Student's current enrolled classes
+ * @param dropSubject - Level+subject to drop (e.g., "10HIS")
+ * @param pickupSubject - Level+subject to pick up (e.g., "11HIM")
+ * @param maxDepth - Maximum number of rearrangements to consider (default: 5)
+ * @returns Array of valid solutions (unsorted - use rankSolutions to sort)
+ */
+export function findSolutions(
+  allSubjects: Subject[],
+  currentSchedule: Subject[],
+  dropSubject: string,
+  pickupSubject: string,
+  maxDepth: number = 5
+): Solution[] {
+  const solutions: Solution[] = [];
+  const visited = new Set<string>();
+
+  // Step 1: Remove the dropped subject from schedule
+  const droppedClass = currentSchedule.find(
+    (s) => getLevelSubjectCode(s.code) === dropSubject
+  );
+
+  if (!droppedClass) {
+    // Student doesn't have this subject - nothing to drop
+    return [];
+  }
+
+  const scheduleAfterDrop = currentSchedule.filter(
+    (s) => getLevelSubjectCode(s.code) !== dropSubject
+  );
+
+  // Create the "drop" change
+  const dropChange: ClassChange = {
+    type: "drop",
+    fromClass: droppedClass,
+    description: `Drop ${droppedClass.code} (${droppedClass.allocation})`,
+  };
+
+  // Step 2: Find all classes of the pickup subject
+  const targetClasses = findSubjectClasses(allSubjects, pickupSubject);
+
+  if (targetClasses.length === 0) {
+    // No classes exist for this subject
+    return [];
+  }
+
+  // Step 3: BFS for each target class
+  for (const targetClass of targetClasses) {
+    // Initialize BFS queue
+    const queue: BFSState[] = [
+      {
+        schedule: scheduleAfterDrop,
+        changes: [dropChange],
+        pendingClass: targetClass,
+      },
+    ];
+
+    // Track visited states for this target
+    const targetVisited = new Set<string>();
+    targetVisited.add(getStateKey(scheduleAfterDrop));
+
+    while (queue.length > 0) {
+      const state = queue.shift()!;
+
+      // Skip if we've gone too deep
+      if (state.changes.length > maxDepth + 1) {
+        continue;
+      }
+
+      // If no pending class, this is a complete solution
+      if (!state.pendingClass) {
+        continue;
+      }
+
+      // Try to add the pending class
+      const conflicts = findConflicts(state.schedule, state.pendingClass);
+
+      if (conflicts.length === 0) {
+        // No conflicts - we can place the class!
+        const newSchedule = [...state.schedule, state.pendingClass];
+        const enrollChange: ClassChange = {
+          type: "enroll",
+          toClass: state.pendingClass,
+          description: `Enroll in ${state.pendingClass.code} (${state.pendingClass.allocation})`,
+        };
+
+        // Check if this final state is already a known solution
+        const finalKey = getStateKey(newSchedule);
+        if (!visited.has(finalKey)) {
+          visited.add(finalKey);
+          solutions.push({
+            newTimetable: newSchedule,
+            changes: [...state.changes, enrollChange],
+            hasCapacityWarning: false, // Will be set by checkCapacity later
+            capacityWarnings: [],
+          });
+        }
+      } else {
+        // Conflicts exist - try to move conflicting subjects
+        for (const conflict of conflicts) {
+          for (const conflictingSubject of conflict.conflictingSubjects) {
+            // Find alternatives for the conflicting subject
+            const alternatives = findNonConflictingAlternatives(
+              allSubjects,
+              state.schedule,
+              conflictingSubject
+            );
+
+            for (const alternative of alternatives) {
+              // Create new schedule with the swap
+              const newSchedule = state.schedule
+                .filter((s) => s.code !== conflictingSubject.code)
+                .concat(alternative);
+
+              const stateKey = getStateKey(newSchedule);
+              if (!targetVisited.has(stateKey)) {
+                targetVisited.add(stateKey);
+
+                // Record the rearrangement
+                const rearrangeChange: ClassChange = {
+                  type: "rearrange",
+                  fromClass: conflictingSubject,
+                  toClass: alternative,
+                  description: `Move from ${conflictingSubject.code} (${conflictingSubject.allocation}) to ${alternative.code} (${alternative.allocation})`,
+                };
+
+                // Add new state to queue
+                queue.push({
+                  schedule: newSchedule,
+                  changes: [...state.changes, rearrangeChange],
+                  pendingClass: state.pendingClass,
+                });
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return solutions;
 }

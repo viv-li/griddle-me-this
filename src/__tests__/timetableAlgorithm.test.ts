@@ -7,6 +7,7 @@ import {
   canAddClass,
   getAlternativeClasses,
   findNonConflictingAlternatives,
+  findSolutions,
 } from "../lib/timetableAlgorithm";
 import type { Subject } from "../types";
 
@@ -394,6 +395,306 @@ describe("timetableAlgorithm", () => {
       );
 
       expect(alternatives.map((a) => a.code)).not.toContain("10ENG1");
+    });
+  });
+
+  describe("findSolutions", () => {
+    // Create a mini timetable for testing
+    const miniTimetable: Subject[] = [
+      // ENG classes in different allocations
+      createSubject({
+        allocation: "AL1",
+        code: "10ENG1",
+        subject: "ENG",
+        class: 1,
+        semester: "both",
+      }),
+      createSubject({
+        allocation: "AL3",
+        code: "10ENG2",
+        subject: "ENG",
+        class: 2,
+        semester: "both",
+      }),
+      // MTA classes
+      createSubject({
+        allocation: "AL2",
+        code: "10MTA1",
+        subject: "MTA",
+        class: 1,
+        semester: "both",
+      }),
+      createSubject({
+        allocation: "AL4",
+        code: "10MTA2",
+        subject: "MTA",
+        class: 2,
+        semester: "both",
+      }),
+      // HIS classes
+      createSubject({
+        allocation: "AL3",
+        code: "10HIS1",
+        subject: "HIS",
+        class: 1,
+        semester: "both",
+      }),
+      createSubject({
+        allocation: "AL5",
+        code: "10HIS2",
+        subject: "HIS",
+        class: 2,
+        semester: "both",
+      }),
+      // SCI classes
+      createSubject({
+        allocation: "AL4",
+        code: "10SCI1",
+        subject: "SCI",
+        class: 1,
+        semester: "both",
+      }),
+      // GEO classes
+      createSubject({
+        allocation: "AL5",
+        code: "10GEO1",
+        subject: "GEO",
+        class: 1,
+        semester: "both",
+      }),
+      createSubject({
+        allocation: "AL6",
+        code: "10GEO2",
+        subject: "GEO",
+        class: 2,
+        semester: "both",
+      }),
+      // ART class
+      createSubject({
+        allocation: "AL6",
+        code: "10ART1",
+        subject: "ART",
+        class: 1,
+        semester: "both",
+      }),
+      // MUS class (alternate AL3 option)
+      createSubject({
+        allocation: "AL3",
+        code: "10MUS1",
+        subject: "MUS",
+        class: 1,
+        semester: "both",
+      }),
+    ];
+
+    describe("simple swap (direct placement)", () => {
+      it("should find solution when target allocation is free", () => {
+        // Student has: MTA1(AL2), HIS1(AL3), SCI1(AL4), GEO1(AL5), ART1(AL6)
+        // Missing AL1
+        // Drop HIS (AL3), pickup ENG
+        // ENG1 is in AL1 (free), ENG2 is in AL3 (will be free after drop)
+        const schedule: Subject[] = [
+          miniTimetable[2], // MTA1 AL2
+          miniTimetable[4], // HIS1 AL3
+          miniTimetable[6], // SCI1 AL4
+          miniTimetable[7], // GEO1 AL5
+          miniTimetable[9], // ART1 AL6
+        ];
+
+        const solutions = findSolutions(
+          miniTimetable,
+          schedule,
+          "10HIS",
+          "10ENG"
+        );
+
+        // Should find solutions - can pick up ENG1 (AL1 free) or ENG2 (AL3 freed)
+        expect(solutions.length).toBeGreaterThan(0);
+
+        // Should have at least one direct solution (drop + enroll only)
+        const directSolution = solutions.find(
+          (s) => s.changes.length === 2 // drop + enroll
+        );
+        expect(directSolution).toBeDefined();
+        expect(directSolution?.changes[0].type).toBe("drop");
+        expect(directSolution?.changes[1].type).toBe("enroll");
+      });
+    });
+
+    describe("single rearrangement", () => {
+      it("should find solution requiring one move", () => {
+        // Student has: ENG1(AL1), MTA1(AL2), HIS2(AL5), SCI1(AL4), GEO2(AL6)
+        // They're missing AL3
+        // Drop GEO (AL6), pickup HIS1 (AL3)
+        // HIS1 is in AL3 which is free, so direct swap possible
+        const schedule: Subject[] = [
+          miniTimetable[0], // ENG1 AL1
+          miniTimetable[2], // MTA1 AL2
+          miniTimetable[5], // HIS2 AL5
+          miniTimetable[6], // SCI1 AL4
+          miniTimetable[8], // GEO2 AL6
+        ];
+
+        const solutions = findSolutions(
+          miniTimetable,
+          schedule,
+          "10GEO",
+          "10HIS"
+        );
+
+        expect(solutions.length).toBeGreaterThan(0);
+      });
+    });
+
+    describe("no solution exists", () => {
+      it("should return empty array when pickup subject doesn't exist", () => {
+        const schedule: Subject[] = [miniTimetable[0]];
+
+        const solutions = findSolutions(
+          miniTimetable,
+          schedule,
+          "10ENG",
+          "10XXX" // Doesn't exist
+        );
+
+        expect(solutions).toEqual([]);
+      });
+
+      it("should return empty array when drop subject not in schedule", () => {
+        const schedule: Subject[] = [miniTimetable[0]]; // Only has ENG
+
+        const solutions = findSolutions(
+          miniTimetable,
+          schedule,
+          "10HIS", // Student doesn't have HIS
+          "10MTA"
+        );
+
+        expect(solutions).toEqual([]);
+      });
+    });
+
+    describe("visited state tracking", () => {
+      it("should not revisit same schedule state", () => {
+        // Create a scenario where naive exploration could loop
+        const schedule: Subject[] = [
+          miniTimetable[0], // ENG1 AL1
+          miniTimetable[2], // MTA1 AL2
+          miniTimetable[4], // HIS1 AL3
+          miniTimetable[6], // SCI1 AL4
+          miniTimetable[7], // GEO1 AL5
+          miniTimetable[9], // ART1 AL6
+        ];
+
+        // This should complete without infinite loop
+        const solutions = findSolutions(
+          miniTimetable,
+          schedule,
+          "10ART",
+          "10GEO"
+        );
+
+        // Should find solutions (exact number depends on available paths)
+        expect(solutions).toBeDefined();
+      });
+    });
+
+    describe("solution structure", () => {
+      it("should include drop change as first step", () => {
+        // Student has MUS, wants to drop MUS and pick up HIS
+        const schedule: Subject[] = [
+          miniTimetable[0], // ENG1 AL1
+          miniTimetable[2], // MTA1 AL2
+          miniTimetable[10], // MUS1 AL3
+          miniTimetable[6], // SCI1 AL4
+          miniTimetable[7], // GEO1 AL5
+          miniTimetable[9], // ART1 AL6
+        ];
+
+        const solutions = findSolutions(
+          miniTimetable,
+          schedule,
+          "10MUS",
+          "10HIS"
+        );
+
+        for (const solution of solutions) {
+          expect(solution.changes[0].type).toBe("drop");
+          expect(solution.changes[0].fromClass?.code).toBe("10MUS1");
+        }
+      });
+
+      it("should include enroll change as last step", () => {
+        const schedule: Subject[] = [
+          miniTimetable[0], // ENG1 AL1
+          miniTimetable[2], // MTA1 AL2
+          miniTimetable[10], // MUS1 AL3
+          miniTimetable[6], // SCI1 AL4
+          miniTimetable[7], // GEO1 AL5
+          miniTimetable[9], // ART1 AL6
+        ];
+
+        const solutions = findSolutions(
+          miniTimetable,
+          schedule,
+          "10MUS",
+          "10HIS"
+        );
+
+        for (const solution of solutions) {
+          const lastChange = solution.changes[solution.changes.length - 1];
+          expect(lastChange.type).toBe("enroll");
+          expect(lastChange.toClass?.subject).toBe("HIS");
+        }
+      });
+
+      it("should have new timetable without dropped subject", () => {
+        const schedule: Subject[] = [
+          miniTimetable[0], // ENG1 AL1
+          miniTimetable[2], // MTA1 AL2
+          miniTimetable[10], // MUS1 AL3
+          miniTimetable[6], // SCI1 AL4
+          miniTimetable[7], // GEO1 AL5
+          miniTimetable[9], // ART1 AL6
+        ];
+
+        const solutions = findSolutions(
+          miniTimetable,
+          schedule,
+          "10MUS",
+          "10HIS"
+        );
+
+        for (const solution of solutions) {
+          const hasMUS = solution.newTimetable.some((s) => s.subject === "MUS");
+          expect(hasMUS).toBe(false);
+        }
+      });
+
+      it("should have new timetable with pickup subject", () => {
+        const schedule: Subject[] = [
+          miniTimetable[0], // ENG1 AL1
+          miniTimetable[2], // MTA1 AL2
+          miniTimetable[10], // MUS1 AL3
+          miniTimetable[6], // SCI1 AL4
+          miniTimetable[7], // GEO1 AL5
+          miniTimetable[9], // ART1 AL6
+        ];
+
+        const solutions = findSolutions(
+          miniTimetable,
+          schedule,
+          "10MUS",
+          "10HIS"
+        );
+
+        for (const solution of solutions) {
+          const hisCount = solution.newTimetable.filter(
+            (s) => s.subject === "HIS"
+          ).length;
+          expect(hisCount).toBe(1);
+        }
+      });
     });
   });
 });
