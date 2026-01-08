@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { FileEdit, AlertCircle, Info } from "lucide-react";
+import { FileEdit, Upload, Info } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StudentSubjectInput } from "@/components/StudentSubjectInput";
 import { ChangeRequestForm } from "@/components/ChangeRequestForm";
@@ -28,13 +29,22 @@ interface NewRequestProps {
     dropSubject: string;
     pickupSubject: string;
   };
+  /** Whether a timetable has been uploaded */
+  hasTimetable?: boolean;
+  /** Callback to navigate to upload page */
+  onGoToUpload?: () => void;
 }
 
 /**
  * Component for creating a new change request.
  * Combines StudentSubjectInput and ChangeRequestForm.
  */
-export function NewRequest({ onSubmit, initialData }: NewRequestProps) {
+export function NewRequest({
+  onSubmit,
+  initialData,
+  hasTimetable = true,
+  onGoToUpload,
+}: NewRequestProps) {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [selectedCodes, setSelectedCodes] = useState<string[]>(
     initialData?.studentSubjectCodes ?? []
@@ -94,31 +104,43 @@ export function NewRequest({ onSubmit, initialData }: NewRequestProps) {
   };
 
   return (
-    <Card className="mx-auto max-w-2xl">
-      <CardHeader className="text-center">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-          <FileEdit className="h-8 w-8 text-muted-foreground" />
-        </div>
-        <CardTitle>New Change Request</CardTitle>
-        <CardDescription>
-          Enter the student's current subjects, then specify what they want to
-          change
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {hasNoTimetable ? (
-          <div className="flex items-center gap-2 rounded-lg bg-amber-50 border border-amber-200 p-4 text-sm text-amber-700">
-            <AlertCircle className="h-5 w-5 flex-shrink-0" />
+    <div className="mx-auto max-w-2xl space-y-6">
+      <Card>
+        <CardHeader className="text-center">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+            <FileEdit className="h-8 w-8 text-muted-foreground" />
+          </div>
+          <CardTitle>New Change Request</CardTitle>
+          <CardDescription>
+            Enter the student's current subjects, then specify what they want to
+            change
+          </CardDescription>
+        </CardHeader>
+      </Card>
+
+      {!hasTimetable || hasNoTimetable ? (
+        <Card>
+          <CardContent className="py-8 text-center space-y-4">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+              <Upload className="h-6 w-6 text-muted-foreground" />
+            </div>
             <div>
               <p className="font-medium">No timetable loaded</p>
-              <p className="text-xs mt-1">
-                Please upload a timetable first before creating a change
-                request.
+              <p className="text-sm text-muted-foreground mt-1">
+                Upload a timetable first to create change requests.
               </p>
             </div>
-          </div>
-        ) : (
-          <>
+            {onGoToUpload && (
+              <Button onClick={onGoToUpload}>
+                <Upload className="mr-2 h-4 w-4" />
+                Upload Timetable
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardContent className="pt-6 space-y-6">
             {/* Optional label input */}
             <div className="space-y-2">
               <label htmlFor="request-label" className="text-sm font-medium">
@@ -179,9 +201,9 @@ export function NewRequest({ onSubmit, initialData }: NewRequestProps) {
                 request
               </div>
             )}
-          </>
-        )}
-      </CardContent>
-    </Card>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 }

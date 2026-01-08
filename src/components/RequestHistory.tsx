@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { History } from "lucide-react";
+import { History, Plus, Upload } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { RequestCard } from "@/components/RequestCard";
 import {
   loadRequests,
@@ -21,7 +22,12 @@ import type { ChangeRequest, Solution, TimetableData } from "@/types";
 interface RequestHistoryProps {
   onSelectRequest: (request: ChangeRequest, solutions: Solution[]) => void;
   onCloneRequest: (request: ChangeRequest) => void;
-  onBack: () => void;
+  /** Callback to navigate to new request page */
+  onNewRequest: () => void;
+  /** Whether a timetable has been uploaded */
+  hasTimetable?: boolean;
+  /** Callback to navigate to upload page */
+  onGoToUpload?: () => void;
 }
 
 /**
@@ -31,6 +37,9 @@ interface RequestHistoryProps {
 export function RequestHistory({
   onSelectRequest,
   onCloneRequest,
+  onNewRequest,
+  hasTimetable = true,
+  onGoToUpload,
 }: RequestHistoryProps) {
   const [requests, setRequests] = useState<ChangeRequest[]>([]);
   const [timetable, setTimetable] = useState<TimetableData | null>(null);
@@ -140,11 +149,34 @@ export function RequestHistory({
         </CardHeader>
       </Card>
 
-      {requests.length === 0 ? (
+      {!hasTimetable ? (
         <Card>
-          <CardContent className="py-8 text-center text-muted-foreground">
-            <p>No change requests yet.</p>
-            <p className="text-sm mt-1">Create a new request to get started.</p>
+          <CardContent className="py-8 text-center space-y-4">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+              <Upload className="h-6 w-6 text-muted-foreground" />
+            </div>
+            <div>
+              <p className="font-medium">No timetable loaded</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Upload a timetable first to create and view change requests.
+              </p>
+            </div>
+            {onGoToUpload && (
+              <Button onClick={onGoToUpload}>
+                <Upload className="mr-2 h-4 w-4" />
+                Upload Timetable
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      ) : requests.length === 0 ? (
+        <Card>
+          <CardContent className="py-8 text-center space-y-4">
+            <p className="text-muted-foreground">No change requests yet.</p>
+            <Button onClick={onNewRequest}>
+              <Plus className="mr-2 h-4 w-4" />
+              Create New Request
+            </Button>
           </CardContent>
         </Card>
       ) : (

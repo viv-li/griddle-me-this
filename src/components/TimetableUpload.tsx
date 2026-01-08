@@ -6,7 +6,6 @@ import {
   FileJson,
   ChevronDown,
   ChevronUp,
-  Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,7 +32,8 @@ import type {
 } from "@/types";
 
 interface TimetableUploadProps {
-  onComplete: () => void;
+  /** Called when timetable is uploaded/changed. isNewUpload is true for fresh uploads. */
+  onTimetableChange?: (isNewUpload: boolean) => void;
 }
 
 const ALLOCATIONS: AllocationBlock[] = [
@@ -78,7 +78,7 @@ function organizeSubjectsByGrid(subjects: Subject[]) {
  * Component for uploading and managing timetable JSON data.
  * Validates uploaded JSON and persists to localStorage.
  */
-export function TimetableUpload({ onComplete }: TimetableUploadProps) {
+export function TimetableUpload({ onTimetableChange }: TimetableUploadProps) {
   const [existingData, setExistingData] = useState<TimetableData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -94,6 +94,8 @@ export function TimetableUpload({ onComplete }: TimetableUploadProps) {
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    const isFirstUpload = existingData === null;
 
     setError(null);
     setSuccessMessage(null);
@@ -123,6 +125,9 @@ export function TimetableUpload({ onComplete }: TimetableUploadProps) {
       saveTimetable(timetableData);
       setExistingData(timetableData);
       setSuccessMessage(`Successfully uploaded ${data.length} subjects`);
+
+      // Notify parent of timetable change
+      onTimetableChange?.(isFirstUpload);
 
       // Clear the file input
       if (fileInputRef.current) {
@@ -197,20 +202,10 @@ export function TimetableUpload({ onComplete }: TimetableUploadProps) {
             )}
 
             {/* Actions */}
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Button
-                variant="outline"
-                onClick={handleUploadClick}
-                className="flex-1"
-              >
-                <Upload className="mr-2 h-4 w-4" />
-                Re-upload Timetable
-              </Button>
-              <Button onClick={onComplete} className="flex-1">
-                <Plus className="mr-2 h-4 w-4" />
-                Subject Change Request
-              </Button>
-            </div>
+            <Button onClick={handleUploadClick} className="w-full">
+              <Upload className="mr-2 h-4 w-4" />
+              Re-upload Timetable
+            </Button>
 
             {/* Hidden file input */}
             <input
@@ -350,7 +345,7 @@ export function TimetableUpload({ onComplete }: TimetableUploadProps) {
 
   // Initial upload state - no existing data
   return (
-    <Card className="mx-auto max-w-md">
+    <Card className="mx-auto max-w-2xl">
       <CardHeader className="text-center">
         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
           <Upload className="h-8 w-8 text-muted-foreground" />
@@ -377,9 +372,20 @@ export function TimetableUpload({ onComplete }: TimetableUploadProps) {
 
         {/* File format hint */}
         <p className="text-center text-xs text-muted-foreground">
-          Expected format: Array of subject objects with allocation, code,
-          level, subject, class, semester, enrolled, and capacity fields.
+          Expected format: JSON array of subject objects. Example:
         </p>
+        <pre className="mt-2 rounded bg-muted p-2 text-xs font-mono overflow-x-auto text-left">
+          {`[{
+  "allocation": "AL1",
+  "code": "10ENG1",
+  "level": 10,
+  "subject": "ENG",
+  "class": 1,
+  "semester": "both",  // sem1, sem2, or both
+  "enrolled": 23,
+  "capacity": 25
+}]`}
+        </pre>
 
         {/* Hidden file input */}
         <input

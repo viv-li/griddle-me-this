@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { AppView, ChangeRequest, Solution } from "@/types";
 import { TimetableUpload } from "@/components/TimetableUpload";
 import { NewRequest } from "@/components/NewRequest";
@@ -12,6 +12,15 @@ import {
   NavigationMenuList,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { History, Plus, Upload } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -37,6 +46,27 @@ function App() {
   );
   const [currentSolutions, setCurrentSolutions] = useState<Solution[]>([]);
   const [cloneData, setCloneData] = useState<CloneData | null>(null);
+  const [hasTimetable, setHasTimetable] = useState(false);
+  const [showNewRequestPrompt, setShowNewRequestPrompt] = useState(false);
+
+  // Check if timetable exists on mount
+  useEffect(() => {
+    const timetable = loadTimetable();
+    setHasTimetable(timetable !== null);
+  }, []);
+
+  // Handle timetable upload completion
+  const handleTimetableUploaded = (isNewUpload: boolean) => {
+    setHasTimetable(true);
+    if (isNewUpload) {
+      setShowNewRequestPrompt(true);
+    }
+  };
+
+  // Navigate to home (history if timetable exists, upload otherwise)
+  const navigateHome = () => {
+    setCurrentView(hasTimetable ? "history" : "upload");
+  };
 
   const handleNewRequestSubmit = (data: {
     label: string;
@@ -154,14 +184,14 @@ function App() {
   const renderView = () => {
     switch (currentView) {
       case "upload":
-        return (
-          <TimetableUpload onComplete={() => setCurrentView("newRequest")} />
-        );
+        return <TimetableUpload onTimetableChange={handleTimetableUploaded} />;
       case "newRequest":
         return (
           <NewRequest
             onSubmit={handleNewRequestSubmit}
             initialData={cloneData || undefined}
+            hasTimetable={hasTimetable}
+            onGoToUpload={() => setCurrentView("upload")}
           />
         );
       case "results":
@@ -204,7 +234,9 @@ function App() {
               setCurrentView("results");
             }}
             onCloneRequest={handleCloneRequest}
-            onBack={() => setCurrentView("newRequest")}
+            onNewRequest={() => setCurrentView("newRequest")}
+            hasTimetable={hasTimetable}
+            onGoToUpload={() => setCurrentView("upload")}
           />
         );
     }
@@ -218,7 +250,7 @@ function App() {
           <div className="container mx-auto flex h-16 items-center justify-between px-4">
             <h1
               className="cursor-pointer text-xl font-bold"
-              onClick={() => setCurrentView("upload")}
+              onClick={navigateHome}
             >
               Griddle Me This
             </h1>
@@ -273,6 +305,39 @@ function App() {
 
         {/* Main Content */}
         <main className="container mx-auto py-8">{renderView()}</main>
+
+        {/* New Request Prompt Modal */}
+        <Dialog
+          open={showNewRequestPrompt}
+          onOpenChange={setShowNewRequestPrompt}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Timetable Uploaded!</DialogTitle>
+              <DialogDescription>
+                Your timetable has been loaded successfully. Would you like to
+                create a subject change request now?
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button
+                variant="outline"
+                onClick={() => setShowNewRequestPrompt(false)}
+              >
+                Not Now
+              </Button>
+              <Button
+                onClick={() => {
+                  setShowNewRequestPrompt(false);
+                  setCurrentView("newRequest");
+                }}
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Create Request
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </ErrorBoundary>
   );
