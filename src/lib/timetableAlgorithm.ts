@@ -339,3 +339,98 @@ export function findSolutions(
 
   return solutions;
 }
+
+// =============================================================================
+// Capacity Checking
+// =============================================================================
+
+/**
+ * Check capacity for all classes affected by a solution.
+ *
+ * Important: The student's own movements affect capacity:
+ * - When leaving a class (fromClass), that class gains 1 spot
+ * - When joining a class (toClass), that class loses 1 spot
+ *
+ * We only check the final state - whether each class the student is joining
+ * has available capacity.
+ *
+ * @param solution - The solution to check
+ * @param allSubjects - All subjects in the master timetable (for current enrollment data)
+ * @returns Updated solution with hasCapacityWarning and capacityWarnings populated
+ */
+export function checkCapacity(
+  solution: Solution,
+  allSubjects: Subject[]
+): Solution {
+  const warnings: string[] = [];
+
+  // Build a map of capacity adjustments from the student's changes
+  // Key: class code, Value: adjustment (+1 for leaving, -1 for joining)
+  const capacityAdjustments = new Map<string, number>();
+
+  for (const change of solution.changes) {
+    if (change.fromClass) {
+      // Student is leaving this class - frees up 1 spot
+      const current = capacityAdjustments.get(change.fromClass.code) ?? 0;
+      capacityAdjustments.set(change.fromClass.code, current + 1);
+    }
+    if (change.toClass) {
+      // Student is joining this class - takes up 1 spot
+      const current = capacityAdjustments.get(change.toClass.code) ?? 0;
+      capacityAdjustments.set(change.toClass.code, current - 1);
+    }
+  }
+
+  // Check each class the student is joining
+  for (const change of solution.changes) {
+    if (change.toClass) {
+      // Find the current enrollment for this class from master timetable
+      const masterClass = allSubjects.find(
+        (s) => s.code === change.toClass!.code
+      );
+
+      if (masterClass) {
+        // Calculate effective enrollment after student's changes:
+        // - adjustment is +1 if student leaves this class (frees spot)
+        // - adjustment is -1 if student joins this class (takes spot)
+        // - net adjustment of 0 means student leaves and rejoins (no change)
+        const adjustment = capacityAdjustments.get(change.toClass.code) ?? 0;
+        const effectiveEnrolled = masterClass.enrolled - adjustment;
+
+        if (effectiveEnrolled > masterClass.capacity) {
+          warnings.push(change.toClass.code);
+        }
+      }
+    }
+  }
+
+  return {
+    ...solution,
+    hasCapacityWarning: warnings.length > 0,
+    capacityWarnings: [...new Set(warnings)], // Dedupe just in case
+  };
+}
+
+// =============================================================================
+// Solution Ranking
+// =============================================================================
+
+/**
+ * Rank solutions by preference:
+ * 1. Solutions without capacity warnings come first
+ * 2. Among equal warning status, fewer changes is better
+ *
+ * @param solutions - Array of solutions to rank
+ * @returns New array sorted by preference (does not mutate input)
+ */
+export function rankSolutions(solutions: Solution[]): Solution[] {
+  return [...solutions].sort((a, b) => {
+    // First: no warnings beats warnings
+    if (a.hasCapacityWarning !== b.hasCapacityWarning) {
+      return a.hasCapacityWarning ? 1 : -1;
+    }
+
+    // Second: fewer changes is better
+    return a.changes.length - b.changes.length;
+  });
+}

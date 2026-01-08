@@ -2,7 +2,11 @@
  * Integration tests for timetable algorithm using real sample data
  */
 
-import { findSolutions } from "../lib/timetableAlgorithm";
+import {
+  findSolutions,
+  checkCapacity,
+  rankSolutions,
+} from "../lib/timetableAlgorithm";
 import {
   loadSampleTimetable,
   buildStudentSchedule,
@@ -105,5 +109,75 @@ describe("timetableAlgorithm integration", () => {
     // Should be a direct swap since both are sem1 at AL6
     const directSwap = solutions.find((s) => s.changes.length === 2);
     expect(directSwap).toBeDefined();
+  });
+
+  describe("full pipeline with capacity and ranking", () => {
+    it("should check capacity for all solutions", () => {
+      const solutions = findSolutions(
+        sampleTimetable,
+        realisticSchedule,
+        "10ITA",
+        "10JAP"
+      );
+
+      // Apply capacity checking to all solutions
+      const checkedSolutions = solutions.map((s) =>
+        checkCapacity(s, sampleTimetable)
+      );
+
+      // All solutions should have capacity info populated
+      for (const solution of checkedSolutions) {
+        expect(solution).toHaveProperty("hasCapacityWarning");
+        expect(solution).toHaveProperty("capacityWarnings");
+        expect(Array.isArray(solution.capacityWarnings)).toBe(true);
+      }
+    });
+
+    it("should rank solutions with no warnings first", () => {
+      const solutions = findSolutions(
+        sampleTimetable,
+        realisticSchedule,
+        "10ITA",
+        "10JAP"
+      );
+
+      const checkedSolutions = solutions.map((s) =>
+        checkCapacity(s, sampleTimetable)
+      );
+      const ranked = rankSolutions(checkedSolutions);
+
+      // Verify ranking: no-warning solutions come before warning solutions
+      let seenWarning = false;
+      for (const solution of ranked) {
+        if (solution.hasCapacityWarning) {
+          seenWarning = true;
+        } else if (seenWarning) {
+          // Found a no-warning solution after a warning solution - bad ranking
+          fail("Solutions with warnings should come after those without");
+        }
+      }
+    });
+
+    it("should rank solutions by fewest changes within same warning status", () => {
+      const solutions = findSolutions(
+        sampleTimetable,
+        realisticSchedule,
+        "10ITA",
+        "10BEN" // Requires rearrangement, multiple solutions expected
+      );
+
+      const checkedSolutions = solutions.map((s) =>
+        checkCapacity(s, sampleTimetable)
+      );
+      const ranked = rankSolutions(checkedSolutions);
+
+      // Within no-warning solutions, verify sorted by change count
+      const noWarningSolutions = ranked.filter((s) => !s.hasCapacityWarning);
+      for (let i = 1; i < noWarningSolutions.length; i++) {
+        expect(noWarningSolutions[i].changes.length).toBeGreaterThanOrEqual(
+          noWarningSolutions[i - 1].changes.length
+        );
+      }
+    });
   });
 });

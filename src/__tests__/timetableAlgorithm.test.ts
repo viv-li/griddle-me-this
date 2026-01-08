@@ -8,8 +8,10 @@ import {
   getAlternativeClasses,
   findNonConflictingAlternatives,
   findSolutions,
+  checkCapacity,
+  rankSolutions,
 } from "../lib/timetableAlgorithm";
-import type { Subject } from "../types";
+import type { Subject, Solution, ClassChange } from "../types";
 
 // Helper to create test subjects
 function createSubject(overrides: Partial<Subject>): Subject {
@@ -695,6 +697,305 @@ describe("timetableAlgorithm", () => {
           expect(hisCount).toBe(1);
         }
       });
+    });
+  });
+
+  describe("checkCapacity", () => {
+    // Master timetable with various capacity states
+    const masterTimetable: Subject[] = [
+      createSubject({
+        code: "10ENG1",
+        subject: "ENG",
+        allocation: "AL1",
+        enrolled: 20,
+        capacity: 25,
+      }),
+      createSubject({
+        code: "10ENG2",
+        subject: "ENG",
+        allocation: "AL3",
+        enrolled: 25,
+        capacity: 25,
+      }), // At capacity
+      createSubject({
+        code: "10MTA1",
+        subject: "MTA",
+        allocation: "AL2",
+        enrolled: 26,
+        capacity: 25,
+      }), // Over capacity
+      createSubject({
+        code: "10HIS1",
+        subject: "HIS",
+        allocation: "AL3",
+        enrolled: 24,
+        capacity: 25,
+      }),
+    ];
+
+    it("should not warn when joining class with available capacity", () => {
+      const solution: Solution = {
+        newTimetable: [],
+        changes: [
+          {
+            type: "enroll",
+            toClass: masterTimetable[0], // ENG1: 20/25
+            description: "Enroll in 10ENG1",
+          },
+        ],
+        hasCapacityWarning: false,
+        capacityWarnings: [],
+      };
+
+      const result = checkCapacity(solution, masterTimetable);
+
+      expect(result.hasCapacityWarning).toBe(false);
+      expect(result.capacityWarnings).toHaveLength(0);
+    });
+
+    it("should warn when joining class at capacity", () => {
+      const solution: Solution = {
+        newTimetable: [],
+        changes: [
+          {
+            type: "enroll",
+            toClass: masterTimetable[1], // ENG2: 25/25
+            description: "Enroll in 10ENG2",
+          },
+        ],
+        hasCapacityWarning: false,
+        capacityWarnings: [],
+      };
+
+      const result = checkCapacity(solution, masterTimetable);
+
+      expect(result.hasCapacityWarning).toBe(true);
+      expect(result.capacityWarnings).toContain("10ENG2");
+    });
+
+    it("should warn when joining class over capacity", () => {
+      const solution: Solution = {
+        newTimetable: [],
+        changes: [
+          {
+            type: "enroll",
+            toClass: masterTimetable[2], // MTA1: 26/25
+            description: "Enroll in 10MTA1",
+          },
+        ],
+        hasCapacityWarning: false,
+        capacityWarnings: [],
+      };
+
+      const result = checkCapacity(solution, masterTimetable);
+
+      expect(result.hasCapacityWarning).toBe(true);
+      expect(result.capacityWarnings).toContain("10MTA1");
+    });
+
+    it("should not warn when leaving an over-capacity class", () => {
+      // Student leaves MTA1 (26/25 - over capacity) and joins ENG1 (20/25)
+      // Leaving an over-capacity class is beneficial, not a problem
+      const solution: Solution = {
+        newTimetable: [],
+        changes: [
+          {
+            type: "rearrange",
+            fromClass: masterTimetable[2], // Leaving MTA1 (26/25)
+            toClass: masterTimetable[0], // Joining ENG1 (20/25)
+            description: "Move from 10MTA1 to 10ENG1",
+          },
+        ],
+        hasCapacityWarning: false,
+        capacityWarnings: [],
+      };
+
+      const result = checkCapacity(solution, masterTimetable);
+
+      // No warning - leaving over-capacity class is good, joining ENG1 has room
+      expect(result.hasCapacityWarning).toBe(false);
+      expect(result.capacityWarnings).toHaveLength(0);
+    });
+
+    it("should account for student leaving a class (frees a spot)", () => {
+      // Student is in ENG2 (at capacity 25/25), moves to ENG1, then rejoins ENG2
+      // Without the "freed spot" logic, rejoining ENG2 would warn (25+1 > 25)
+      // But since student left ENG2, there's now a spot for them
+      const solution: Solution = {
+        newTimetable: [],
+        changes: [
+          {
+            type: "rearrange",
+            fromClass: masterTimetable[1], // Leaving ENG2 (25/25)
+            toClass: masterTimetable[0], // Joining ENG1 (20/25)
+            description: "Move from 10ENG2 to 10ENG1",
+          },
+          {
+            type: "rearrange",
+            fromClass: masterTimetable[0], // Leaving ENG1
+            toClass: masterTimetable[1], // Rejoining ENG2 - should be OK!
+            description: "Move from 10ENG1 back to 10ENG2",
+          },
+        ],
+        hasCapacityWarning: false,
+        capacityWarnings: [],
+      };
+
+      const result = checkCapacity(solution, masterTimetable);
+
+      // ENG2 was at 25/25, but student left (+1) then rejoined (-1) = net 0
+      // So effective enrolled is still 25, which equals capacity - no warning
+      expect(result.hasCapacityWarning).toBe(false);
+    });
+
+    it("should handle drop then enroll correctly", () => {
+      // Student drops HIS1, then enrolls in ENG2 (at capacity)
+      // The student is NOT leaving ENG2, so it's still at capacity
+      const solution: Solution = {
+        newTimetable: [],
+        changes: [
+          {
+            type: "drop",
+            fromClass: masterTimetable[3], // Dropping HIS1
+            description: "Drop 10HIS1",
+          },
+          {
+            type: "enroll",
+            toClass: masterTimetable[1], // Joining ENG2 (at capacity)
+            description: "Enroll in 10ENG2",
+          },
+        ],
+        hasCapacityWarning: false,
+        capacityWarnings: [],
+      };
+
+      const result = checkCapacity(solution, masterTimetable);
+
+      expect(result.hasCapacityWarning).toBe(true);
+      expect(result.capacityWarnings).toContain("10ENG2");
+    });
+
+    it("should track multiple capacity warnings", () => {
+      const solution: Solution = {
+        newTimetable: [],
+        changes: [
+          {
+            type: "drop",
+            fromClass: masterTimetable[3],
+            description: "Drop 10HIS1",
+          },
+          {
+            type: "rearrange",
+            fromClass: masterTimetable[0],
+            toClass: masterTimetable[1], // ENG2 at capacity
+            description: "Move to 10ENG2",
+          },
+          {
+            type: "enroll",
+            toClass: masterTimetable[2], // MTA1 over capacity
+            description: "Enroll in 10MTA1",
+          },
+        ],
+        hasCapacityWarning: false,
+        capacityWarnings: [],
+      };
+
+      const result = checkCapacity(solution, masterTimetable);
+
+      expect(result.hasCapacityWarning).toBe(true);
+      expect(result.capacityWarnings).toContain("10ENG2");
+      expect(result.capacityWarnings).toContain("10MTA1");
+    });
+  });
+
+  describe("rankSolutions", () => {
+    // Helper to create minimal solutions for ranking tests
+    function createSolution(
+      hasWarning: boolean,
+      changeCount: number
+    ): Solution {
+      const changes: ClassChange[] = Array(changeCount)
+        .fill(null)
+        .map((_, i) => ({
+          type: "rearrange" as const,
+          description: `Change ${i + 1}`,
+        }));
+
+      return {
+        newTimetable: [],
+        changes,
+        hasCapacityWarning: hasWarning,
+        capacityWarnings: hasWarning ? ["SOME_CLASS"] : [],
+      };
+    }
+
+    it("should rank solutions without warnings before those with warnings", () => {
+      const solutions = [
+        createSolution(true, 2), // Warning, 2 changes
+        createSolution(false, 3), // No warning, 3 changes
+        createSolution(true, 1), // Warning, 1 change
+        createSolution(false, 2), // No warning, 2 changes
+      ];
+
+      const ranked = rankSolutions(solutions);
+
+      // First two should have no warnings
+      expect(ranked[0].hasCapacityWarning).toBe(false);
+      expect(ranked[1].hasCapacityWarning).toBe(false);
+      // Last two should have warnings
+      expect(ranked[2].hasCapacityWarning).toBe(true);
+      expect(ranked[3].hasCapacityWarning).toBe(true);
+    });
+
+    it("should rank by fewer changes within same warning status", () => {
+      const solutions = [
+        createSolution(false, 4),
+        createSolution(false, 2),
+        createSolution(false, 3),
+      ];
+
+      const ranked = rankSolutions(solutions);
+
+      expect(ranked[0].changes.length).toBe(2);
+      expect(ranked[1].changes.length).toBe(3);
+      expect(ranked[2].changes.length).toBe(4);
+    });
+
+    it("should rank warnings by fewer changes too", () => {
+      const solutions = [
+        createSolution(true, 5),
+        createSolution(true, 2),
+        createSolution(true, 3),
+      ];
+
+      const ranked = rankSolutions(solutions);
+
+      expect(ranked[0].changes.length).toBe(2);
+      expect(ranked[1].changes.length).toBe(3);
+      expect(ranked[2].changes.length).toBe(5);
+    });
+
+    it("should not mutate the original array", () => {
+      const solutions = [createSolution(true, 2), createSolution(false, 3)];
+
+      const ranked = rankSolutions(solutions);
+
+      // Original should still have warning first
+      expect(solutions[0].hasCapacityWarning).toBe(true);
+      // Ranked should have no-warning first
+      expect(ranked[0].hasCapacityWarning).toBe(false);
+    });
+
+    it("should handle empty array", () => {
+      const ranked = rankSolutions([]);
+      expect(ranked).toEqual([]);
+    });
+
+    it("should handle single solution", () => {
+      const solutions = [createSolution(false, 2)];
+      const ranked = rankSolutions(solutions);
+      expect(ranked).toHaveLength(1);
+      expect(ranked[0].changes.length).toBe(2);
     });
   });
 });
