@@ -428,15 +428,23 @@ export function checkCapacity(
 // =============================================================================
 
 /**
- * Rank solutions by preference:
- * 1. Solutions without capacity warnings come first
- * 2. Among equal warning status, fewer changes is better
+ * Check capacity and rank solutions by preference:
+ * 1. Applies capacity checks to determine which solutions exceed capacity
+ * 2. Solutions without capacity warnings come first
+ * 3. Among equal warning status, fewer changes is better
  *
  * @param solutions - Array of solutions to rank
- * @returns New array sorted by preference (does not mutate input)
+ * @param allSubjects - All subjects in the master timetable (for capacity checking)
+ * @returns New array with capacity warnings populated, sorted by preference
  */
-export function rankSolutions(solutions: Solution[]): Solution[] {
-  return [...solutions].sort((a, b) => {
+export function rankSolutions(
+  solutions: Solution[],
+  allSubjects: Subject[]
+): Solution[] {
+  // Apply capacity checks to all solutions
+  const checkedSolutions = solutions.map((s) => checkCapacity(s, allSubjects));
+
+  return checkedSolutions.sort((a, b) => {
     // First: no warnings beats warnings
     if (a.hasCapacityWarning !== b.hasCapacityWarning) {
       return a.hasCapacityWarning ? 1 : -1;

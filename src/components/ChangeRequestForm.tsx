@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ArrowRight, Check, ChevronsUpDown, RefreshCw } from "lucide-react";
+import { ArrowRight, Check, ChevronsUpDown, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -14,6 +14,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { getLevelSubjectCode } from "@/lib/timetableUtils";
 import type { Subject, RequestType } from "@/types";
@@ -260,14 +266,6 @@ export function ChangeRequestForm({
               </PopoverContent>
             </Popover>
           </div>
-
-          {dropSubject && (
-            <p className="flex items-center gap-2 text-xs text-muted-foreground">
-              <RefreshCw className="h-3.5 w-3.5" />
-              Find a different class of {dropSubject} (e.g., to change teacher
-              or allocation)
-            </p>
-          )}
         </div>
       ) : (
         // Subject Change Mode - Drop and Pickup dropdowns
@@ -346,7 +344,27 @@ export function ChangeRequestForm({
 
             {/* Pickup Subject */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">Pick Up Subject</label>
+              <label className="text-sm font-medium flex items-center gap-1.5">
+                Pick Up Subject
+                {dropSubject && (
+                  <TooltipProvider delayDuration={100}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        <p>
+                          Showing{" "}
+                          {droppedSubjectInfo?.isYearLong
+                            ? "year-long"
+                            : "semester-long"}{" "}
+                          subjects only (matching drop subject duration)
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+              </label>
               <Popover open={pickupOpen} onOpenChange={setPickupOpen}>
                 <PopoverTrigger asChild>
                   <Button
@@ -426,15 +444,6 @@ export function ChangeRequestForm({
               </Popover>
             </div>
           </div>
-
-          {/* Info message about duration filtering */}
-          {dropSubject && (
-            <p className="text-xs text-muted-foreground">
-              Showing{" "}
-              {droppedSubjectInfo?.isYearLong ? "year-long" : "semester-long"}{" "}
-              subjects only (matching drop subject duration)
-            </p>
-          )}
 
           {/* Validation message */}
           {dropSubject && pickupSubject && dropSubject === pickupSubject && (

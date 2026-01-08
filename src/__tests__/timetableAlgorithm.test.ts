@@ -1028,35 +1028,80 @@ describe("timetableAlgorithm", () => {
   });
 
   describe("rankSolutions", () => {
+    // Master timetable for ranking tests - includes both full and available classes
+    const rankingMasterTimetable: Subject[] = [
+      // Class with capacity (20/25 = room for more)
+      {
+        allocation: "AL1",
+        code: "10OK1",
+        level: 10,
+        subject: "OK",
+        class: 1,
+        semester: "both",
+        enrolled: 20,
+        capacity: 25,
+      },
+      // Class at capacity (25/25 = will be over after joining)
+      {
+        allocation: "AL2",
+        code: "10FULL1",
+        level: 10,
+        subject: "FULL",
+        class: 1,
+        semester: "both",
+        enrolled: 25,
+        capacity: 25,
+      },
+    ];
+
+    // Helper to create a subject for use in changes
+    function createSubject(code: string): Subject {
+      return {
+        allocation: "AL1",
+        code,
+        level: 10,
+        subject: code.slice(2, -1),
+        class: 1,
+        semester: "both",
+        enrolled: 0,
+        capacity: 25,
+      };
+    }
+
     // Helper to create minimal solutions for ranking tests
     function createSolution(
-      hasWarning: boolean,
+      shouldTriggerWarning: boolean,
       changeCount: number
     ): Solution {
+      // Use a class code that will trigger warning based on master timetable
+      const targetCode = shouldTriggerWarning ? "10FULL1" : "10OK1";
+      const targetSubject = createSubject(targetCode);
+
       const changes: ClassChange[] = Array(changeCount)
         .fill(null)
         .map((_, i) => ({
-          type: "rearrange" as const,
+          type: "enroll" as const,
+          toClass: targetSubject,
           description: `Change ${i + 1}`,
         }));
 
       return {
         newTimetable: [],
         changes,
-        hasCapacityWarning: hasWarning,
-        capacityWarnings: hasWarning ? ["SOME_CLASS"] : [],
+        hasCapacityWarning: false, // Will be set by checkCapacity in rankSolutions
+        capacityWarnings: [],
       };
     }
 
     it("should rank solutions without warnings before those with warnings", () => {
       const solutions = [
-        createSolution(true, 2), // Warning, 2 changes
+        createSolution(true, 2), // Will have warning, 2 changes
         createSolution(false, 3), // No warning, 3 changes
-        createSolution(true, 1), // Warning, 1 change
+        createSolution(true, 1), // Will have warning, 1 change
         createSolution(false, 2), // No warning, 2 changes
       ];
 
-      const ranked = rankSolutions(solutions);
+      const ranked = rankSolutions(solutions, rankingMasterTimetable);
 
       // First two should have no warnings
       expect(ranked[0].hasCapacityWarning).toBe(false);
@@ -1073,7 +1118,7 @@ describe("timetableAlgorithm", () => {
         createSolution(false, 3),
       ];
 
-      const ranked = rankSolutions(solutions);
+      const ranked = rankSolutions(solutions, rankingMasterTimetable);
 
       expect(ranked[0].changes.length).toBe(2);
       expect(ranked[1].changes.length).toBe(3);
@@ -1087,32 +1132,37 @@ describe("timetableAlgorithm", () => {
         createSolution(true, 3),
       ];
 
-      const ranked = rankSolutions(solutions);
+      const ranked = rankSolutions(solutions, rankingMasterTimetable);
 
       expect(ranked[0].changes.length).toBe(2);
       expect(ranked[1].changes.length).toBe(3);
       expect(ranked[2].changes.length).toBe(5);
     });
 
-    it("should not mutate the original array", () => {
-      const solutions = [createSolution(true, 2), createSolution(false, 3)];
+    it("should not mutate the original array order", () => {
+      const solutions = [
+        createSolution(true, 2), // Warning
+        createSolution(false, 3), // No warning
+      ];
 
-      const ranked = rankSolutions(solutions);
+      const ranked = rankSolutions(solutions, rankingMasterTimetable);
 
-      // Original should still have warning first
-      expect(solutions[0].hasCapacityWarning).toBe(true);
+      // Original array order should be preserved (first element still at index 0)
+      expect(solutions[0].changes.length).toBe(2);
+      expect(solutions[1].changes.length).toBe(3);
       // Ranked should have no-warning first
       expect(ranked[0].hasCapacityWarning).toBe(false);
+      expect(ranked[1].hasCapacityWarning).toBe(true);
     });
 
     it("should handle empty array", () => {
-      const ranked = rankSolutions([]);
+      const ranked = rankSolutions([], rankingMasterTimetable);
       expect(ranked).toEqual([]);
     });
 
     it("should handle single solution", () => {
       const solutions = [createSolution(false, 2)];
-      const ranked = rankSolutions(solutions);
+      const ranked = rankSolutions(solutions, rankingMasterTimetable);
       expect(ranked).toHaveLength(1);
       expect(ranked[0].changes.length).toBe(2);
     });

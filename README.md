@@ -5,6 +5,7 @@ A frontend-only React web application for teachers to check whether a student's 
 ## Features
 
 - **Timetable Upload**: Upload master timetable as JSON, with visual overview grid and enrollment tooltips
+- **Data Format Help**: Built-in documentation with Claude AI prompt for extracting timetable data from screenshots
 - **Smart Validation**: Real-time schedule validation with duplicate subject detection
 - **Change Requests**: Two modes supported:
   - **Change Subject**: Drop one subject and pick up a different subject

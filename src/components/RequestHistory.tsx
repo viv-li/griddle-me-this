@@ -53,9 +53,16 @@ export function RequestHistory({
 
   // Compute solution status for each request
   const solutionStatus = useMemo(() => {
-    if (!timetable) return new Map<string, boolean>();
+    if (!timetable)
+      return new Map<
+        string,
+        { hasSolutions: boolean; allOverCapacity: boolean }
+      >();
 
-    const status = new Map<string, boolean>();
+    const status = new Map<
+      string,
+      { hasSolutions: boolean; allOverCapacity: boolean }
+    >();
     for (const request of requests) {
       const studentSchedule = timetable.subjects.filter((s) =>
         request.studentSubjects.includes(s.code)
@@ -66,7 +73,11 @@ export function RequestHistory({
         request.dropSubject,
         request.pickupSubject
       );
-      status.set(request.id, solutions.length > 0);
+      const rankedSolutions = rankSolutions(solutions, timetable.subjects);
+      const hasSolutions = rankedSolutions.length > 0;
+      const allOverCapacity =
+        hasSolutions && rankedSolutions.every((s) => s.hasCapacityWarning);
+      status.set(request.id, { hasSolutions, allOverCapacity });
     }
     return status;
   }, [requests, timetable]);
@@ -92,7 +103,7 @@ export function RequestHistory({
       request.pickupSubject
     );
 
-    const rankedSolutions = rankSolutions(solutions);
+    const rankedSolutions = rankSolutions(solutions, timetable.subjects);
     onSelectRequest(request, rankedSolutions);
   };
 
@@ -189,7 +200,12 @@ export function RequestHistory({
                 request={request}
                 isStale={isStale(request)}
                 missingSubjectCodes={missingCodes}
-                hasSolutions={solutionStatus.get(request.id) ?? false}
+                hasSolutions={
+                  solutionStatus.get(request.id)?.hasSolutions ?? false
+                }
+                allSolutionsOverCapacity={
+                  solutionStatus.get(request.id)?.allOverCapacity ?? false
+                }
                 rerunSuccess={rerunSuccessId === request.id}
                 onClick={() => handleSelectRequest(request)}
                 onLabelChange={(newLabel) =>

@@ -68,7 +68,7 @@ export function SolutionCard({
                         className="text-amber-600 border-amber-300"
                       >
                         <AlertTriangle className="mr-1 h-3 w-3" />
-                        Capacity Warning
+                        Over Capacity
                       </Badge>
                     )}
                   </CardTitle>
@@ -133,24 +133,8 @@ export function SolutionCard({
             {/* Change Steps */}
             <div>
               <h4 className="text-sm font-medium mb-3">Required Changes</h4>
-              <ChangeSteps
-                changes={solution.changes}
-                capacityWarnings={solution.capacityWarnings}
-              />
+              <ChangeSteps changes={solution.changes} />
             </div>
-
-            {/* Capacity warning summary */}
-            {solution.capacityWarnings.length > 0 && (
-              <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-sm text-amber-700">
-                <p className="font-medium flex items-center gap-1">
-                  <AlertTriangle className="h-4 w-4" />
-                  Classes at or over capacity:
-                </p>
-                <p className="mt-1 font-mono text-xs">
-                  {solution.capacityWarnings.join(", ")}
-                </p>
-              </div>
-            )}
           </CardContent>
         </CollapsibleContent>
       </Collapsible>

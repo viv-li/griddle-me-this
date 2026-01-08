@@ -191,10 +191,7 @@ describe("timetableAlgorithm integration", () => {
         "10ENG"
       );
 
-      const checkedSolutions = solutions.map((s) =>
-        checkCapacity(s, sampleTimetable)
-      );
-      const ranked = rankSolutions(checkedSolutions);
+      const ranked = rankSolutions(solutions, sampleTimetable);
 
       // Verify ranking order: no-warning first, then by change count
       let seenWarning = false;
@@ -246,10 +243,7 @@ describe("timetableAlgorithm integration", () => {
         "10JAP"
       );
 
-      const checkedSolutions = solutions.map((s) =>
-        checkCapacity(s, sampleTimetable)
-      );
-      const ranked = rankSolutions(checkedSolutions);
+      const ranked = rankSolutions(solutions, sampleTimetable);
 
       // Verify ranking: no-warning solutions come before warning solutions
       let seenWarning = false;
@@ -271,10 +265,7 @@ describe("timetableAlgorithm integration", () => {
         "10BEN" // Requires rearrangement, multiple solutions expected
       );
 
-      const checkedSolutions = solutions.map((s) =>
-        checkCapacity(s, sampleTimetable)
-      );
-      const ranked = rankSolutions(checkedSolutions);
+      const ranked = rankSolutions(solutions, sampleTimetable);
 
       // Within no-warning solutions, verify sorted by change count
       const noWarningSolutions = ranked.filter((s) => !s.hasCapacityWarning);

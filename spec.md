@@ -82,12 +82,13 @@ flowchart TD
 - Display last upload date/time and subject count
 - Allow re-uploading to update data at any time
 - **Master Timetable Overview**: Collapsible grid showing all subjects organized by allocation and semester, with hover tooltips for enrollment details
+- **Data Format Help**: Collapsible card with expected JSON structure and Claude AI prompt for extracting timetable data from screenshots
 
 ### 2. Request Management ("All Requests")
 
 - Maintain a list of all change requests in localStorage
 - Each request displayed via shared RequestCard component showing:
-  - Solution status icon (green check or red X)
+  - Solution status icon: green check (solutions found), amber alert (solutions but all over capacity), or red X (no solutions)
   - Editable label (click to edit in-place)
   - Current student subjects summary
   - Requested change (drop X for Y)
@@ -394,3 +395,4 @@ Labels can be edited by clicking on them, which transforms the text into an inpu
 - Archive/resolve actioned requests without deleting
 - Motion and transitions for UI polish
 - Dark mode support
+- Extend alternative suggestions when no solutions found to be more sophisticated

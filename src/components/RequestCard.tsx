@@ -4,6 +4,7 @@ import {
   Trash2,
   CheckCircle,
   XCircle,
+  AlertCircle,
   Copy,
   Check,
 } from "lucide-react";
@@ -36,6 +37,8 @@ interface RequestCardProps {
   missingSubjectCodes?: string[];
   /** Whether solutions were found */
   hasSolutions?: boolean;
+  /** Whether all solutions are over capacity */
+  allSolutionsOverCapacity?: boolean;
   /** Whether to show rerun success indicator */
   rerunSuccess?: boolean;
   /** Callback when the card is clicked */
@@ -59,6 +62,7 @@ export function RequestCard({
   isStale = false,
   missingSubjectCodes = [],
   hasSolutions = false,
+  allSolutionsOverCapacity = false,
   rerunSuccess = false,
   onClick,
   onLabelChange,
@@ -97,9 +101,13 @@ export function RequestCard({
           <div className="flex items-start gap-3">
             {/* Solution status icon - always visible on left */}
             <div className="shrink-0">
-              {hasSolutions ? (
+              {hasSolutions && !allSolutionsOverCapacity ? (
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100">
                   <CheckCircle className="h-5 w-5 text-green-600" />
+                </div>
+              ) : hasSolutions && allSolutionsOverCapacity ? (
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100">
+                  <AlertCircle className="h-5 w-5 text-amber-600" />
                 </div>
               ) : (
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100">

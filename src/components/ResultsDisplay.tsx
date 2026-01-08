@@ -43,8 +43,8 @@ export function ResultsDisplay({
   if (!request) {
     return (
       <div className="mx-auto max-w-2xl space-y-6">
-        <Button variant="ghost" size="sm" onClick={onBack}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
+        <Button variant="ghost" onClick={onBack}>
+          <ArrowLeft className="mr-2 h-5 w-5" />
           Back
         </Button>
         <Card>
@@ -73,11 +73,13 @@ export function ResultsDisplay({
 
   const allSubjects = timetable?.subjects || [];
   const hasSolutions = solutions.length > 0;
+  const allSolutionsOverCapacity =
+    hasSolutions && solutions.every((s) => s.hasCapacityWarning);
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
-      <Button variant="ghost" size="sm" onClick={onBack}>
-        <ArrowLeft className="mr-2 h-4 w-4" />
+      <Button variant="ghost" onClick={onBack}>
+        <ArrowLeft className="mr-2 h-5 w-5" />
         All Requests
       </Button>
 
@@ -87,6 +89,7 @@ export function ResultsDisplay({
         isStale={isStale}
         missingSubjectCodes={missingSubjectCodes}
         hasSolutions={hasSolutions}
+        allSolutionsOverCapacity={allSolutionsOverCapacity}
         onLabelChange={onLabelChange}
         onRerun={isStale ? onRerun : undefined}
         onClone={onClone}

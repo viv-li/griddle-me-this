@@ -6,6 +6,10 @@ import {
   FileJson,
   ChevronDown,
   ChevronUp,
+  HelpCircle,
+  Sparkles,
+  Copy,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,6 +26,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { validateTimetableJSON } from "@/lib/validation";
 import { saveTimetable, loadTimetable } from "@/lib/storage";
 import type {
@@ -72,6 +81,168 @@ function organizeSubjectsByGrid(subjects: Subject[]) {
   }
 
   return grid;
+}
+
+const CLAUDE_PROMPT = `Your job is to extract the data in screenshots you are given into json format.
+
+
+Screenshot description and context
+
+- Screenshots show available timetabled subject blocks offered at a school.
+- Subjects are split into 6 different allocations AL1-AL6. Screenshots will be of one allocation at a time.
+- Some subjects run for a single semester - either semester 1 (SEM1 )or semester 2 (MID YEAR & SEM2). Other subjects run across both semesters. The length and position of the subject block within the allocation shows if it runs in semester 1, semester 2 (consider mid year as part of semester 2), or across both semesters.
+- The first line within a subject block is the subject name. It will always follow the format "year level+3 letter subject code+subject class number", e.g. 10ENG1 and 10ENG2 are both year 10 english classes, just different classes with different teachers and different allocation blocks.
+- The second line within a  subject block shows the class capacity, e.g. 21/25 means there are 21 students enrolled out of a max 25 student capacity for that class.
+- Ignore the color coding on the subject blocks.
+
+
+Instructions
+
+- Read all of the information from this screenshot and convert it to the same json format as in this example: { "allocation": "AL6", "code": "11HIM6", "level": 11, "subject": "HIM", "class": 6, "semester": "both", "enrolled": 23, "capacity": 25 } 
+- Put generated json into a separate artefact. As you're given successive screenshots in a conversation append it to the artefact.
+- Make sure you actually read and parse everything in the screenshot
+- NEVER just generate random data that fits the pattern. If you're unsure of something because the screenshot is unclear flag that in your reply`;
+
+/**
+ * Toggleable card showing expected JSON format and Claude extraction instructions
+ */
+function FormatHelpCard() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const copyToClipboard = async (text: string) => {
+    await navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <Card className="mx-auto max-w-2xl border-dashed">
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <CollapsibleTrigger asChild>
+          <CardHeader className="cursor-pointer select-none hover:bg-muted/50 transition-colors rounded-t-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100">
+                  <HelpCircle className="h-5 w-5 text-amber-600" />
+                </div>
+                <div className="text-left">
+                  <CardTitle className="text-base">Data Format Help</CardTitle>
+                  <CardDescription>
+                    Expected JSON format & how to extract data using AI
+                  </CardDescription>
+                </div>
+              </div>
+              <Button variant="ghost" size="sm" className="ml-2">
+                {isOpen ? (
+                  <ChevronUp className="h-5 w-5" />
+                ) : (
+                  <ChevronDown className="h-5 w-5" />
+                )}
+              </Button>
+            </div>
+          </CardHeader>
+        </CollapsibleTrigger>
+
+        <CollapsibleContent>
+          <CardContent className="space-y-6 pt-0">
+            {/* Expected JSON Format Section */}
+            <div className="space-y-3">
+              <h4 className="font-semibold text-sm flex items-center gap-2">
+                <FileJson className="h-4 w-4 text-blue-500" />
+                Expected JSON Format
+              </h4>
+              <p className="text-sm text-muted-foreground">
+                Upload a JSON file containing an array of subject objects. Each
+                subject should have these fields:
+              </p>
+              <pre className="rounded-lg bg-slate-900 text-slate-100 p-4 text-xs font-mono overflow-x-auto">
+                <code>{`[{
+  "allocation": "AL1",    // AL1-AL6
+  "code": "10ENG1",       // Full subject code
+  "level": 10,            // Year level (10, 11, 12)
+  "subject": "ENG",       // 3-letter subject code
+  "class": 1,             // Class number
+  "semester": "both",     // "sem1", "sem2", or "both"
+  "enrolled": 23,         // Current enrollment
+  "capacity": 25          // Max capacity
+}]`}</code>
+              </pre>
+            </div>
+
+            {/* Divider */}
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-dashed" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">
+                  Need to extract data from screenshots?
+                </span>
+              </div>
+            </div>
+
+            {/* Claude AI Extraction Section */}
+            <div className="space-y-3">
+              <h4 className="font-semibold text-sm flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-purple-500" />
+                Extract Data Using Claude AI
+              </h4>
+              <p className="text-sm text-muted-foreground">
+                If you have screenshots of allocation blocks, you can use Claude
+                to extract the data into JSON format. Create a Claude Project
+                with the following instructions, then upload screenshots of each
+                allocation block:
+              </p>
+
+              <div className="relative">
+                <pre className="rounded-lg bg-slate-900 text-slate-100 p-4 text-xs font-mono overflow-x-auto max-h-64 overflow-y-auto">
+                  <code>{CLAUDE_PROMPT}</code>
+                </pre>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="absolute top-2 right-2 h-8 gap-1.5"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    copyToClipboard(CLAUDE_PROMPT);
+                  }}
+                >
+                  {copied ? (
+                    <>
+                      <Check className="h-3.5 w-3.5" />
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-3.5 w-3.5" />
+                      Copy
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              <div className="rounded-lg bg-purple-50 border border-purple-200 p-3 text-sm text-purple-800">
+                <p className="font-medium mb-1">How to use:</p>
+                <ol className="list-decimal list-inside space-y-1 text-xs">
+                  <li>Create a new Claude Project at claude.ai</li>
+                  <li>
+                    Paste the above instructions into the project's custom
+                    instructions
+                  </li>
+                  <li>Upload screenshots of each allocation block (AL1-AL6)</li>
+                  <li>
+                    Claude will generate JSON data you can download and upload
+                    here
+                  </li>
+                </ol>
+              </div>
+            </div>
+          </CardContent>
+        </CollapsibleContent>
+      </Collapsible>
+    </Card>
+  );
 }
 
 /**
@@ -159,8 +330,8 @@ export function TimetableUpload({ onTimetableChange }: TimetableUploadProps) {
     const subjectGrid = organizeSubjectsByGrid(existingData.subjects);
 
     return (
-      <div className="mx-auto max-w-5xl space-y-6">
-        <Card>
+      <div className="space-y-6">
+        <Card className="mx-auto max-w-2xl">
           <CardHeader className="text-center">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
               <CheckCircle2 className="h-8 w-8 text-green-600" />
@@ -218,8 +389,15 @@ export function TimetableUpload({ onTimetableChange }: TimetableUploadProps) {
           </CardContent>
         </Card>
 
+        {/* Format Help Card */}
+        <FormatHelpCard />
+
         {/* Timetable Grid Visualization */}
-        <Card>
+        <Card
+          className={`mx-auto transition-all duration-300 ${
+            showGrid ? "max-w-5xl" : "max-w-2xl"
+          }`}
+        >
           <CardHeader
             className="cursor-pointer select-none"
             onClick={() => setShowGrid(!showGrid)}
@@ -345,57 +523,45 @@ export function TimetableUpload({ onTimetableChange }: TimetableUploadProps) {
 
   // Initial upload state - no existing data
   return (
-    <Card className="mx-auto max-w-2xl">
-      <CardHeader className="text-center">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-          <Upload className="h-8 w-8 text-muted-foreground" />
-        </div>
-        <CardTitle>Upload Timetable</CardTitle>
-        <CardDescription>
-          Upload your master timetable JSON file to get started
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Error message */}
-        {error && (
-          <div className="flex items-center gap-2 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
-            <AlertCircle className="h-4 w-4 flex-shrink-0" />
-            {error}
+    <div className="mx-auto max-w-2xl space-y-6">
+      <Card>
+        <CardHeader className="text-center">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+            <Upload className="h-8 w-8 text-muted-foreground" />
           </div>
-        )}
+          <CardTitle>Upload Timetable</CardTitle>
+          <CardDescription>
+            Upload your master timetable JSON file to get started
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Error message */}
+          {error && (
+            <div className="flex items-center gap-2 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+              <AlertCircle className="h-4 w-4 flex-shrink-0" />
+              {error}
+            </div>
+          )}
 
-        {/* Upload button */}
-        <Button onClick={handleUploadClick} className="w-full" size="lg">
-          <Upload className="mr-2 h-4 w-4" />
-          Select JSON File
-        </Button>
+          {/* Upload button */}
+          <Button onClick={handleUploadClick} className="w-full" size="lg">
+            <Upload className="mr-2 h-4 w-4" />
+            Select JSON File
+          </Button>
 
-        {/* File format hint */}
-        <p className="text-center text-xs text-muted-foreground">
-          Expected format: JSON array of subject objects. Example:
-        </p>
-        <pre className="mt-2 rounded bg-muted p-2 text-xs font-mono overflow-x-auto text-left">
-          {`[{
-  "allocation": "AL1",
-  "code": "10ENG1",
-  "level": 10,
-  "subject": "ENG",
-  "class": 1,
-  "semester": "both",  // sem1, sem2, or both
-  "enrolled": 23,
-  "capacity": 25
-}]`}
-        </pre>
+          {/* Hidden file input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".json"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+        </CardContent>
+      </Card>
 
-        {/* Hidden file input */}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".json"
-          onChange={handleFileChange}
-          className="hidden"
-        />
-      </CardContent>
-    </Card>
+      {/* Format Help Card */}
+      <FormatHelpCard />
+    </div>
   );
 }

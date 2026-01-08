@@ -177,6 +177,7 @@ Wire up UI components to the App shell - end-to-end flow testable after this pha
 - **Master Timetable Overview**: Collapsible grid showing all subjects organized by allocation and semester
   - Badges for each subject with enrollment info
   - Hover tooltips showing detailed enrollment (e.g., "23/25 enrolled")
+- **Data Format Help**: Collapsible card with JSON format documentation and Claude AI prompt for extracting data from screenshots
 
 ### 3.2 Student Subject Input
 

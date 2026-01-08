@@ -104,8 +104,8 @@ function App() {
       data.pickupSubject
     );
 
-    // Rank the solutions
-    const rankedSolutions = rankSolutions(solutions);
+    // Rank the solutions (also applies capacity checks)
+    const rankedSolutions = rankSolutions(solutions, timetable.subjects);
 
     // Save the request
     addRequest(request);
@@ -161,7 +161,7 @@ function App() {
       currentRequest.pickupSubject
     );
 
-    const rankedSolutions = rankSolutions(solutions);
+    const rankedSolutions = rankSolutions(solutions, timetable.subjects);
 
     // Update the request's timetable version
     const updatedRequest = {
