@@ -348,6 +348,64 @@ Wire up UI components to the App shell - end-to-end flow testable after this pha
 
 ---
 
+## Phase 7: Same-Subject Class Change
+
+Add a mode toggle to the change request form for "Change class" mode - user selects a subject they want to move to a different class of, and the algorithm finds all valid alternative classes ranked by capacity then fewest moves.
+
+### 7.1 Types Update
+
+- Update [`src/types/index.ts`](src/types/index.ts):
+  - Add `requestType: "subject-change" | "class-change"` field to `ChangeRequest`
+  - Existing requests without `requestType` default to `"subject-change"` (backward compatible)
+
+### 7.2 Algorithm Update
+
+- Update [`src/lib/timetableAlgorithm.ts`](src/lib/timetableAlgorithm.ts):
+  - Modify `findSolutions()` to handle same-subject case (`dropSubject === pickupSubject`)
+  - When same-subject, exclude the student's current class code from target classes
+  - Ranking stays the same: prefer available capacity, then fewest moves
+
+### 7.3 Change Request Form
+
+- Update [`src/components/ChangeRequestForm.tsx`](src/components/ChangeRequestForm.tsx):
+  - Add segmented toggle at top: "Change Subject" | "Change Class"
+  - **Change Subject mode** (current): Drop + Pickup dropdowns
+  - **Change Class mode** (new):
+    - Single dropdown: "Subject to find alternative class for"
+    - No pickup dropdown needed (implied: same subject, different class)
+    - Info text explaining the mode
+
+### 7.4 Display Updates
+
+- Update [`src/components/RequestCard.tsx`](src/components/RequestCard.tsx):
+  - For `requestType: "class-change"`: Show "Find alternative class for 10ENG"
+  - For `requestType: "subject-change"`: Show current "Drop 10HIS for 11HIM"
+
+### 7.5 Wire Up
+
+- Update [`src/components/NewRequest.tsx`](src/components/NewRequest.tsx):
+  - Pass `requestType` through form submission
+  - Handle class-change mode (set `pickupSubject = dropSubject`)
+- Update [`src/App.tsx`](src/App.tsx):
+  - Store and pass `requestType` when creating requests
+
+### 7.6 Tests
+
+- Update [`src/__tests__/storage.test.ts`](src/__tests__/storage.test.ts):
+  - Add `requestType` field to sample request fixtures
+- Update [`src/__tests__/timetableAlgorithm.test.ts`](src/__tests__/timetableAlgorithm.test.ts):
+  - Add unit tests for class-change mode (same subject, different class)
+  - Test exclusion of current class from target classes
+  - Test empty result when no alternative classes exist
+  - Test class change requiring rearrangement
+- Update [`src/__tests__/timetableAlgorithm.integration.test.ts`](src/__tests__/timetableAlgorithm.integration.test.ts):
+  - Add integration tests for class-change with real sample data
+  - Test finding alternative classes of same subject
+  - Test exclusion of current class from solutions
+  - Test ranking of class-change solutions by capacity then changes
+
+---
+
 ## Key Files Summary
 
 | File                                          | Purpose                                  |

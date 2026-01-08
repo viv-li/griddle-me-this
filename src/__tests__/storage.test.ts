@@ -114,6 +114,7 @@ describe("storage", () => {
       studentSubjects: ["10ENG1", "10MTA1"],
       dropSubject: "10ENG",
       pickupSubject: "10HIS",
+      requestType: "subject-change",
       createdAt: "2024-01-15T10:30:00.000Z",
       timetableVersion: "2024-01-15T10:00:00.000Z",
     };

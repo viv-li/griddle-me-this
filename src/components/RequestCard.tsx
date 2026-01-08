@@ -122,9 +122,18 @@ export function RequestCard({
                 </span>
               )}
               <p className="text-sm text-muted-foreground mt-1">
-                <span className="font-mono">{request.dropSubject}</span>
-                {" → "}
-                <span className="font-mono">{request.pickupSubject}</span>
+                {request.requestType === "class-change" ? (
+                  <>
+                    Find alternative class for{" "}
+                    <span className="font-mono">{request.dropSubject}</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="font-mono">{request.dropSubject}</span>
+                    {" → "}
+                    <span className="font-mono">{request.pickupSubject}</span>
+                  </>
+                )}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
                 Created {formatDate(request.createdAt)}

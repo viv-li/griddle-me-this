@@ -15,7 +15,7 @@ interface TimetableGridProps {
   title?: string;
   /** Whether to show the legend (default true) */
   showLegend?: boolean;
-  /** 
+  /**
    * Which timetable to display:
    * - "old": Shows original timetable with drops/outgoing rearrangements highlighted
    * - "new": Shows new timetable with adds/incoming rearrangements highlighted
@@ -23,9 +23,21 @@ interface TimetableGridProps {
   mode?: "old" | "new";
 }
 
-const ALLOCATIONS: AllocationBlock[] = ["AL1", "AL2", "AL3", "AL4", "AL5", "AL6"];
+const ALLOCATIONS: AllocationBlock[] = [
+  "AL1",
+  "AL2",
+  "AL3",
+  "AL4",
+  "AL5",
+  "AL6",
+];
 
-type CellStatus = "unchanged" | "dropped" | "added" | "rearranged-out" | "rearranged-in";
+type CellStatus =
+  | "unchanged"
+  | "dropped"
+  | "added"
+  | "rearranged-out"
+  | "rearranged-in";
 
 interface GridCell {
   subject: Subject | null;

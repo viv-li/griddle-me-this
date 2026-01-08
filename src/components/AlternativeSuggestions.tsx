@@ -63,7 +63,10 @@ export function AlternativeSuggestions({
   for (const alt of alternatives) {
     const key = `${alt.level}${alt.subject}`;
     const existing = groupedAlternatives.get(key);
-    if (!existing || alt.capacity - alt.enrolled > existing.capacity - existing.enrolled) {
+    if (
+      !existing ||
+      alt.capacity - alt.enrolled > existing.capacity - existing.enrolled
+    ) {
       groupedAlternatives.set(key, alt);
     }
   }
@@ -84,7 +87,8 @@ export function AlternativeSuggestions({
           Alternative Suggestions
         </CardTitle>
         <CardDescription>
-          Other subjects available in {droppedSubject.allocation} that might work
+          Other subjects available in {droppedSubject.allocation} that might
+          work
         </CardDescription>
       </CardHeader>
       <CardContent>

@@ -197,10 +197,14 @@ function getStateKey(schedule: Subject[]): string {
  * Uses BFS to explore all possible timetable rearrangements that would
  * allow the student to drop one subject and pick up another.
  *
+ * Supports two modes:
+ * - Subject change: dropSubject !== pickupSubject (e.g., drop 10HIS, pick up 11HIM)
+ * - Class change: dropSubject === pickupSubject (find different class of same subject)
+ *
  * @param allSubjects - All subjects in the master timetable
  * @param currentSchedule - Student's current enrolled classes
  * @param dropSubject - Level+subject to drop (e.g., "10HIS")
- * @param pickupSubject - Level+subject to pick up (e.g., "11HIM")
+ * @param pickupSubject - Level+subject to pick up (e.g., "11HIM"). Same as dropSubject for class change.
  * @param maxDepth - Maximum number of rearrangements to consider (default: 5)
  * @returns Array of valid solutions (unsorted - use rankSolutions to sort)
  */
@@ -213,6 +217,9 @@ export function findSolutions(
 ): Solution[] {
   const solutions: Solution[] = [];
   const visited = new Set<string>();
+
+  // Determine if this is a class change (same subject, different class)
+  const isClassChange = dropSubject === pickupSubject;
 
   // Step 1: Remove the dropped subject from schedule
   const droppedClass = currentSchedule.find(
@@ -236,7 +243,12 @@ export function findSolutions(
   };
 
   // Step 2: Find all classes of the pickup subject
-  const targetClasses = findSubjectClasses(allSubjects, pickupSubject);
+  let targetClasses = findSubjectClasses(allSubjects, pickupSubject);
+
+  // For class change, exclude the student's current class
+  if (isClassChange) {
+    targetClasses = targetClasses.filter((c) => c.code !== droppedClass.code);
+  }
 
   if (targetClasses.length === 0) {
     // No classes exist for this subject

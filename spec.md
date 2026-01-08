@@ -114,12 +114,17 @@ flowchart TD
 ### 4. Subject Change Request
 
 - Optional label input at top with privacy reminder: "Do not include identifying student information"
+- **Mode toggle**: "Change Subject" | "Change Class"
+  - **Change Subject mode**: Swap one subject for a different subject
+  - **Change Class mode**: Find alternative class of the same subject (e.g., to change teacher or allocation)
 - **Searchable single-select comboboxes** for drop and pickup subjects
 - **Drop**: Select which subject (level + 3-letter code) the student wants to drop, shows duration (Year/Semester)
-- **Pick up**: Select which subject (level + 3-letter code) the student wants to add, shows duration
+- **Pick up** (Change Subject mode only): Select which subject (level + 3-letter code) the student wants to add, shows duration
 - **Duration filtering**: Pickup options filtered to match drop subject duration (year-long → year-long, semester → semester)
 - Pickup dropdown disabled until drop subject selected; clears when drop changes
-- Example: Drop `10HIS` (Year 10 History), Pick up `11HIM` (Year 11 Ancient History)
+- In Change Class mode, algorithm finds all alternative classes of the selected subject
+- Example (Change Subject): Drop `10HIS` (Year 10 History), Pick up `11HIM` (Year 11 Ancient History)
+- Example (Change Class): Find alternative class for `10ENG` to change teacher
 
 ### 5. Timetabling Algorithm
 
@@ -238,7 +243,8 @@ interface ChangeRequest {
   label?: string; // Optional, user-provided
   studentSubjects: string[]; // Current subject codes
   dropSubject: string; // Level + subject code, e.g., "10HIS"
-  pickupSubject: string; // Level + subject code, e.g., "11HIM"
+  pickupSubject: string; // Level + subject code, e.g., "11HIM" (same as dropSubject for class-change)
+  requestType: "subject-change" | "class-change"; // Type of change request
   createdAt: string; // ISO timestamp
   timetableVersion: string; // uploadedAt of timetable used
 }
@@ -380,7 +386,6 @@ Labels can be edited by clicking on them, which transforms the text into an inpu
 
 ## Future Enhancements (Out of MVP Scope)
 
-- Change to different class of same subject (avoid specific teacher)
 - Support for multiple year levels beyond Year 10
 - Bulk check multiple students at once
 - Export results to PDF/CSV

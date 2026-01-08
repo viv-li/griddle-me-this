@@ -54,6 +54,9 @@ export interface TimetableData {
 // Change Request Types
 // =============================================================================
 
+/** Type of change request */
+export type RequestType = "subject-change" | "class-change";
+
 /**
  * A student's subject change request.
  * Stores what the student wants to change and the context for the algorithm.
@@ -67,8 +70,10 @@ export interface ChangeRequest {
   studentSubjects: string[];
   /** Subject to drop, format: level + 3-letter code (e.g., "10HIS") */
   dropSubject: string;
-  /** Subject to pick up, format: level + 3-letter code (e.g., "11HIM") */
+  /** Subject to pick up, format: level + 3-letter code (e.g., "11HIM"). For class-change, same as dropSubject */
   pickupSubject: string;
+  /** Type of change: swap subjects or move to different class of same subject */
+  requestType: RequestType;
   /** ISO timestamp when request was created */
   createdAt: string;
   /** uploadedAt timestamp of the timetable used when this request was created */

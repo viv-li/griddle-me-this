@@ -13,7 +13,7 @@ import { StudentSubjectInput } from "@/components/StudentSubjectInput";
 import { ChangeRequestForm } from "@/components/ChangeRequestForm";
 import { loadTimetable } from "@/lib/storage";
 import { validateStudentSchedule } from "@/lib/validation";
-import type { Subject } from "@/types";
+import type { Subject, RequestType } from "@/types";
 
 interface NewRequestProps {
   onSubmit: (data: {
@@ -21,6 +21,7 @@ interface NewRequestProps {
     studentSubjectCodes: string[];
     dropSubject: string;
     pickupSubject: string;
+    requestType: RequestType;
   }) => void;
   /** Initial data to pre-populate the form (for cloning) */
   initialData?: {
@@ -28,6 +29,7 @@ interface NewRequestProps {
     studentSubjectCodes: string[];
     dropSubject: string;
     pickupSubject: string;
+    requestType?: RequestType;
   };
   /** Whether a timetable has been uploaded */
   hasTimetable?: boolean;
@@ -56,6 +58,9 @@ export function NewRequest({
   const [pickupSubject, setPickupSubject] = useState(
     initialData?.pickupSubject ?? ""
   );
+  const [requestType, setRequestType] = useState<RequestType>(
+    initialData?.requestType ?? "subject-change"
+  );
 
   // Load timetable subjects on mount
   useEffect(() => {
@@ -72,6 +77,7 @@ export function NewRequest({
       setLabel(initialData.label ?? "");
       setDropSubject(initialData.dropSubject);
       setPickupSubject(initialData.pickupSubject);
+      setRequestType(initialData.requestType ?? "subject-change");
     }
   }, [initialData]);
 
@@ -95,11 +101,16 @@ export function NewRequest({
   const hasNoTimetable = subjects.length === 0;
 
   const handleSubmit = () => {
+    // For class-change mode, pickupSubject should be the same as dropSubject
+    const finalPickupSubject =
+      requestType === "class-change" ? dropSubject : pickupSubject;
+
     onSubmit({
       label,
       studentSubjectCodes: selectedCodes,
       dropSubject,
-      pickupSubject,
+      pickupSubject: finalPickupSubject,
+      requestType,
     });
   };
 
@@ -189,6 +200,8 @@ export function NewRequest({
                   onDropChange={setDropSubject}
                   pickupSubject={pickupSubject}
                   onPickupChange={setPickupSubject}
+                  requestType={requestType}
+                  onRequestTypeChange={setRequestType}
                   onSubmit={handleSubmit}
                 />
               </div>

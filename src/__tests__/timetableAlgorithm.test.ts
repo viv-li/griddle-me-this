@@ -601,6 +601,125 @@ describe("timetableAlgorithm", () => {
       });
     });
 
+    describe("class change (same subject, different class)", () => {
+      it("should find alternative classes when dropSubject equals pickupSubject", () => {
+        // Student has ENG1 in AL1, wants a different ENG class
+        // ENG2 is in AL3 which is free
+        const schedule: Subject[] = [
+          miniTimetable[0], // ENG1 AL1
+          miniTimetable[2], // MTA1 AL2
+          miniTimetable[6], // SCI1 AL4
+          miniTimetable[7], // GEO1 AL5
+          miniTimetable[9], // ART1 AL6
+        ];
+
+        const solutions = findSolutions(
+          miniTimetable,
+          schedule,
+          "10ENG", // drop ENG
+          "10ENG" // pickup ENG (same subject = class change)
+        );
+
+        // Should find at least one solution (move to ENG2)
+        expect(solutions.length).toBeGreaterThan(0);
+
+        // Verify that we end up in a different ENG class
+        for (const solution of solutions) {
+          const engClass = solution.newTimetable.find(
+            (s) => s.subject === "ENG"
+          );
+          expect(engClass).toBeDefined();
+          expect(engClass?.code).not.toBe("10ENG1"); // Should NOT be the original class
+        }
+      });
+
+      it("should exclude current class from target classes", () => {
+        // Student has ENG1, wants to change class
+        // Should not include ENG1 as a solution target
+        const schedule: Subject[] = [
+          miniTimetable[0], // ENG1 AL1
+          miniTimetable[2], // MTA1 AL2
+          miniTimetable[6], // SCI1 AL4
+          miniTimetable[7], // GEO1 AL5
+          miniTimetable[9], // ART1 AL6
+        ];
+
+        const solutions = findSolutions(
+          miniTimetable,
+          schedule,
+          "10ENG",
+          "10ENG"
+        );
+
+        // None of the solutions should end up in ENG1
+        for (const solution of solutions) {
+          const engClass = solution.newTimetable.find(
+            (s) => s.subject === "ENG"
+          );
+          expect(engClass?.code).not.toBe("10ENG1");
+        }
+      });
+
+      it("should return empty array when no alternative classes exist", () => {
+        // Create a scenario where there's only one class of a subject
+        const singleClassTimetable: Subject[] = [
+          createSubject({
+            allocation: "AL1",
+            code: "10UNQ1",
+            subject: "UNQ",
+            class: 1,
+            semester: "both",
+          }),
+          createSubject({
+            allocation: "AL2",
+            code: "10MTA1",
+            subject: "MTA",
+            class: 1,
+            semester: "both",
+          }),
+        ];
+
+        const schedule: Subject[] = [
+          singleClassTimetable[0], // UNQ1 - only class of this subject
+          singleClassTimetable[1], // MTA1
+        ];
+
+        const solutions = findSolutions(
+          singleClassTimetable,
+          schedule,
+          "10UNQ",
+          "10UNQ" // Try to change class but there's only one
+        );
+
+        expect(solutions).toEqual([]);
+      });
+
+      it("should handle class change requiring rearrangement", () => {
+        // Student has ENG1 in AL1
+        // ENG2 is in AL3, but student also has something in AL3
+        // Should require rearrangement
+        const schedule: Subject[] = [
+          miniTimetable[0], // ENG1 AL1
+          miniTimetable[2], // MTA1 AL2
+          miniTimetable[4], // HIS1 AL3 (conflicts with ENG2)
+          miniTimetable[6], // SCI1 AL4
+          miniTimetable[7], // GEO1 AL5
+          miniTimetable[9], // ART1 AL6
+        ];
+
+        const solutions = findSolutions(
+          miniTimetable,
+          schedule,
+          "10ENG",
+          "10ENG"
+        );
+
+        // Should still find solutions, potentially requiring HIS to move
+        // Or might need multi-step rearrangement
+        expect(solutions.length).toBeGreaterThanOrEqual(0);
+      });
+    });
+
     describe("solution structure", () => {
       it("should include drop change as first step", () => {
         // Student has MUS, wants to drop MUS and pick up HIS

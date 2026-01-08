@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import type { AppView, ChangeRequest, Solution } from "@/types";
+import type { AppView, ChangeRequest, Solution, RequestType } from "@/types";
 import { TimetableUpload } from "@/components/TimetableUpload";
 import { NewRequest } from "@/components/NewRequest";
 import { ResultsDisplay } from "@/components/ResultsDisplay";
@@ -37,6 +37,7 @@ interface CloneData {
   studentSubjectCodes: string[];
   dropSubject: string;
   pickupSubject: string;
+  requestType?: RequestType;
 }
 
 function App() {
@@ -73,6 +74,7 @@ function App() {
     studentSubjectCodes: string[];
     dropSubject: string;
     pickupSubject: string;
+    requestType: RequestType;
   }) => {
     const timetable = loadTimetable();
     if (!timetable) return;
@@ -84,6 +86,7 @@ function App() {
       studentSubjects: data.studentSubjectCodes,
       dropSubject: data.dropSubject,
       pickupSubject: data.pickupSubject,
+      requestType: data.requestType,
       createdAt: new Date().toISOString(),
       timetableVersion: timetable.uploadedAt,
     };
@@ -124,6 +127,7 @@ function App() {
       studentSubjectCodes: request.studentSubjects,
       dropSubject: request.dropSubject,
       pickupSubject: request.pickupSubject,
+      requestType: request.requestType,
     });
     setCurrentView("newRequest");
   };

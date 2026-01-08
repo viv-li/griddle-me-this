@@ -6,7 +6,10 @@ A frontend-only React web application for teachers to check whether a student's 
 
 - **Timetable Upload**: Upload master timetable as JSON, with visual overview grid and enrollment tooltips
 - **Smart Validation**: Real-time schedule validation with duplicate subject detection
-- **Change Requests**: Enter student subjects and specify drop/pickup with duration-aware filtering
+- **Change Requests**: Two modes supported:
+  - **Change Subject**: Drop one subject and pick up a different subject
+  - **Change Class**: Find alternative classes of the same subject (e.g., to change teacher or allocation)
+- **Duration Filtering**: Pickup options filtered to match drop subject duration (year/semester)
 - **BFS Algorithm**: Finds all valid configurations with minimal changes
 - **Dual Timetable Display**: Side-by-side current vs new timetable comparison
 - **Ranked Solutions**: Solutions sorted by capacity warnings and number of changes
