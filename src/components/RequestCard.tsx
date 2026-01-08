@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   RefreshCw,
   Trash2,
@@ -9,6 +10,14 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Tooltip,
   TooltipContent,
@@ -57,6 +66,7 @@ export function RequestCard({
   onClone,
   onDelete,
 }: RequestCardProps) {
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const hasMissingSubjects = missingSubjectCodes.length > 0;
   const canRerun = isStale && !hasMissingSubjects;
 
@@ -210,7 +220,7 @@ export function RequestCard({
                       className="h-8 w-8 text-destructive hover:text-destructive"
                       onClick={(e) => {
                         e.stopPropagation();
-                        onDelete();
+                        setShowDeleteConfirm(true);
                       }}
                     >
                       <Trash2 className="h-4 w-4" />
@@ -225,6 +235,39 @@ export function RequestCard({
           </div>
         </CardContent>
       </Card>
+
+      {/* Delete confirmation dialog */}
+      <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Request?</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete{" "}
+              <span className="font-medium">
+                {request.label || "this request"}
+              </span>
+              ? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteConfirm(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                setShowDeleteConfirm(false);
+                onDelete?.();
+              }}
+            >
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </TooltipProvider>
   );
 }

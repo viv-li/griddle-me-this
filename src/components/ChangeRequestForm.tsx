@@ -302,7 +302,8 @@ export function ChangeRequestForm({
       {/* Info message about duration filtering */}
       {dropSubject && (
         <p className="text-xs text-muted-foreground">
-          Showing {droppedSubjectInfo?.isYearLong ? "year-long" : "semester"}{" "}
+          Showing{" "}
+          {droppedSubjectInfo?.isYearLong ? "year-long" : "semester-long"}{" "}
           subjects only (matching drop subject duration)
         </p>
       )}

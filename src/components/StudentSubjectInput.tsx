@@ -267,6 +267,7 @@ export function StudentSubjectInput({
                     const subject = coverageMap[al][sem];
                     const isFilled = subject !== null;
                     const isYearLong = subject?.semester === "both";
+                    const isSem1 = subject?.semester === "sem1";
                     return (
                       <td
                         key={`${al}-${sem}`}
@@ -275,7 +276,9 @@ export function StudentSubjectInput({
                           isFilled
                             ? isYearLong
                               ? "bg-blue-50 text-blue-700"
-                              : "bg-green-50 text-green-700"
+                              : isSem1
+                              ? "bg-green-50 text-green-700"
+                              : "bg-violet-50 text-violet-700"
                             : "bg-red-50 text-red-400"
                         )}
                       >
@@ -297,7 +300,11 @@ export function StudentSubjectInput({
           </div>
           <div className="flex items-center gap-1">
             <div className="w-3 h-3 rounded bg-green-50 border border-green-200"></div>
-            <span>Semester</span>
+            <span>Sem 1</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="w-3 h-3 rounded bg-violet-50 border border-violet-200"></div>
+            <span>Sem 2</span>
           </div>
           <div className="flex items-center gap-1">
             <div className="w-3 h-3 rounded bg-red-50 border border-red-200"></div>

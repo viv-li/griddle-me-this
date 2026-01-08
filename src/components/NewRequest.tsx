@@ -144,7 +144,7 @@ export function NewRequest({
             {/* Optional label input */}
             <div className="space-y-2">
               <label htmlFor="request-label" className="text-sm font-medium">
-                Label{" "}
+                Request Label{" "}
                 <span className="text-muted-foreground font-normal">
                   (optional)
                 </span>
