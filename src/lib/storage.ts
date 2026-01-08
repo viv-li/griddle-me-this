@@ -2,7 +2,7 @@
  * LocalStorage operations for timetable data and change requests
  */
 
-import type { TimetableData, ChangeRequest, Subject } from "../types";
+import type { TimetableData, ChangeRequest } from "../types";
 
 // Storage keys
 const TIMETABLE_KEY = "griddle-timetable";
@@ -105,47 +105,4 @@ export function deleteRequest(id: string): void {
   const requests = loadRequests();
   const filtered = requests.filter((r) => r.id !== id);
   saveRequests(filtered);
-}
-
-// =============================================================================
-// Enrollment Updates
-// =============================================================================
-
-/**
- * Update enrollment counts in the timetable when a solution is applied.
- *
- * @param changes - Array of { fromCode, toCode } representing class changes
- *                  fromCode: class the student is leaving (decrement enrolled)
- *                  toCode: class the student is joining (increment enrolled)
- */
-export function updateTimetableEnrollment(
-  changes: Array<{ fromCode?: string; toCode?: string }>
-): void {
-  const timetable = loadTimetable();
-  if (!timetable) return;
-
-  // Create a map for quick lookup
-  const subjectMap = new Map<string, Subject>();
-  for (const subject of timetable.subjects) {
-    subjectMap.set(subject.code, subject);
-  }
-
-  // Apply changes
-  for (const change of changes) {
-    if (change.fromCode) {
-      const fromSubject = subjectMap.get(change.fromCode);
-      if (fromSubject && fromSubject.enrolled > 0) {
-        fromSubject.enrolled--;
-      }
-    }
-    if (change.toCode) {
-      const toSubject = subjectMap.get(change.toCode);
-      if (toSubject) {
-        toSubject.enrolled++;
-      }
-    }
-  }
-
-  // Save updated timetable
-  saveTimetable(timetable);
 }

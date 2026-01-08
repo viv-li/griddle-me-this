@@ -97,7 +97,6 @@ Build and test core logic together - each module with its test file.
   - `saveTimetable()`, `loadTimetable()`
   - `saveRequests()`, `loadRequests()`
   - `addRequest()`, `updateRequest()`, `deleteRequest()`
-  - `updateTimetableEnrollment()` for applying solutions
 - Create [`src/__tests__/storage.test.ts`](src/__tests__/storage.test.ts):
   - Save and load roundtrip
   - Handle missing/corrupted data gracefully
@@ -248,7 +247,6 @@ Wire up UI components to the App shell - end-to-end flow testable after this pha
   - "New Timetable" using TimetableGrid in `"new"` mode
 - "Recommended" badge on first solution
 - Capacity warning badge if `hasCapacityWarning`
-- "Accept This Solution" button (placeholder for Phase 5)
 
 ### 4.4 Alternative Suggestions Component
 
@@ -300,44 +298,26 @@ Wire up UI components to the App shell - end-to-end flow testable after this pha
 
 ---
 
-## Phase 5: Apply Solutions
+## Phase 5: Polish
 
-### 5.1 Apply Solution Flow
-
-- Add acceptance handler to SolutionCard
-- Call `updateTimetableEnrollment()` to update localStorage counts
-- Mark request status as "applied" with `appliedSolutionIndex`
-- Show inline confirmation message with summary of changes applied
-- Update UI state to reflect applied status (disable Accept button, show "Applied" badge)
-
-### 5.2 Wire Up Apply Actions
-
-- Connect "Accept This Solution" button to apply flow
-- Update RequestCard to show applied state
-- Prevent re-applying already applied requests
-
----
-
-## Phase 6: Polish
-
-### 6.1 Error Handling
+### 5.1 Error Handling
 
 - Error boundary component for graceful failures
 - Clear error messages for validation failures
 - Handle edge cases (empty timetable, no subjects match, etc.)
 
-### 6.2 Loading & Empty States
+### 5.2 Loading & Empty States
 
 - Loading indicators during algorithm computation (if needed)
 - Empty states for: no timetable uploaded, no history, no solutions
 
-### 6.3 Inline Feedback
+### 5.3 Inline Feedback
 
 - Contextual success/error messages displayed inline near the triggering action
 - Status changes reflected immediately in UI state (badges, disabled buttons, visual updates)
 - Confirmation dialogs for destructive actions (delete request)
 
-### 6.4 Visual Refinements
+### 5.4 Visual Refinements
 
 - Consistent spacing and typography
 - Ensure adequate color contrast for accessibility

@@ -10,7 +10,6 @@ import {
   addRequest,
   updateRequest,
   deleteRequest,
-  updateTimetableEnrollment,
 } from "../lib/storage";
 import type { TimetableData, ChangeRequest } from "../types";
 
@@ -117,7 +116,6 @@ describe("storage", () => {
       pickupSubject: "10HIS",
       createdAt: "2024-01-15T10:30:00.000Z",
       timetableVersion: "2024-01-15T10:00:00.000Z",
-      status: "pending",
     };
 
     describe("saveRequests and loadRequests", () => {
@@ -182,21 +180,20 @@ describe("storage", () => {
       it("should update an existing request", () => {
         addRequest(sampleRequest);
 
-        updateRequest("req-1", { status: "applied", appliedSolutionIndex: 0 });
+        updateRequest("req-1", { label: "Updated Label" });
 
         const loaded = loadRequests();
-        expect(loaded[0].status).toBe("applied");
-        expect(loaded[0].appliedSolutionIndex).toBe(0);
-        expect(loaded[0].label).toBe("Test Request"); // Unchanged
+        expect(loaded[0].label).toBe("Updated Label");
+        expect(loaded[0].dropSubject).toBe("10ENG"); // Unchanged
       });
 
       it("should do nothing if request ID not found", () => {
         addRequest(sampleRequest);
 
-        updateRequest("nonexistent", { status: "applied" });
+        updateRequest("nonexistent", { label: "New Label" });
 
         const loaded = loadRequests();
-        expect(loaded[0].status).toBe("pending");
+        expect(loaded[0].label).toBe("Test Request");
       });
     });
 
@@ -219,129 +216,6 @@ describe("storage", () => {
 
         const loaded = loadRequests();
         expect(loaded).toHaveLength(1);
-      });
-    });
-  });
-
-  describe("Enrollment Updates", () => {
-    const createTimetable = (): TimetableData => ({
-      subjects: [
-        {
-          allocation: "AL1",
-          code: "10ENG1",
-          level: 10,
-          subject: "ENG",
-          class: 1,
-          semester: "both",
-          enrolled: 20,
-          capacity: 25,
-        },
-        {
-          allocation: "AL1",
-          code: "10ENG2",
-          level: 10,
-          subject: "ENG",
-          class: 2,
-          semester: "both",
-          enrolled: 22,
-          capacity: 25,
-        },
-        {
-          allocation: "AL2",
-          code: "10HIS1",
-          level: 10,
-          subject: "HIS",
-          class: 1,
-          semester: "both",
-          enrolled: 15,
-          capacity: 25,
-        },
-      ],
-      uploadedAt: "2024-01-15T10:30:00.000Z",
-    });
-
-    describe("updateTimetableEnrollment", () => {
-      it("should decrement enrollment when leaving a class", () => {
-        saveTimetable(createTimetable());
-
-        updateTimetableEnrollment([{ fromCode: "10ENG1" }]);
-
-        const loaded = loadTimetable();
-        const eng1 = loaded?.subjects.find((s) => s.code === "10ENG1");
-        expect(eng1?.enrolled).toBe(19);
-      });
-
-      it("should increment enrollment when joining a class", () => {
-        saveTimetable(createTimetable());
-
-        updateTimetableEnrollment([{ toCode: "10HIS1" }]);
-
-        const loaded = loadTimetable();
-        const his1 = loaded?.subjects.find((s) => s.code === "10HIS1");
-        expect(his1?.enrolled).toBe(16);
-      });
-
-      it("should handle both leaving and joining in one change", () => {
-        saveTimetable(createTimetable());
-
-        updateTimetableEnrollment([{ fromCode: "10ENG1", toCode: "10ENG2" }]);
-
-        const loaded = loadTimetable();
-        const eng1 = loaded?.subjects.find((s) => s.code === "10ENG1");
-        const eng2 = loaded?.subjects.find((s) => s.code === "10ENG2");
-        expect(eng1?.enrolled).toBe(19);
-        expect(eng2?.enrolled).toBe(23);
-      });
-
-      it("should handle multiple changes", () => {
-        saveTimetable(createTimetable());
-
-        updateTimetableEnrollment([
-          { fromCode: "10ENG1", toCode: "10ENG2" },
-          { toCode: "10HIS1" },
-        ]);
-
-        const loaded = loadTimetable();
-        const eng1 = loaded?.subjects.find((s) => s.code === "10ENG1");
-        const eng2 = loaded?.subjects.find((s) => s.code === "10ENG2");
-        const his1 = loaded?.subjects.find((s) => s.code === "10HIS1");
-        expect(eng1?.enrolled).toBe(19);
-        expect(eng2?.enrolled).toBe(23);
-        expect(his1?.enrolled).toBe(16);
-      });
-
-      it("should not decrement below zero", () => {
-        const timetable = createTimetable();
-        timetable.subjects[0].enrolled = 0;
-        saveTimetable(timetable);
-
-        updateTimetableEnrollment([{ fromCode: "10ENG1" }]);
-
-        const loaded = loadTimetable();
-        const eng1 = loaded?.subjects.find((s) => s.code === "10ENG1");
-        expect(eng1?.enrolled).toBe(0);
-      });
-
-      it("should do nothing if timetable doesn't exist", () => {
-        // No timetable saved
-        updateTimetableEnrollment([{ fromCode: "10ENG1", toCode: "10ENG2" }]);
-
-        // Should not throw, just do nothing
-        expect(loadTimetable()).toBeNull();
-      });
-
-      it("should ignore unknown subject codes", () => {
-        saveTimetable(createTimetable());
-
-        updateTimetableEnrollment([
-          { fromCode: "UNKNOWN1", toCode: "UNKNOWN2" },
-        ]);
-
-        // Timetable should be unchanged
-        const loaded = loadTimetable();
-        expect(loaded?.subjects[0].enrolled).toBe(20);
-        expect(loaded?.subjects[1].enrolled).toBe(22);
-        expect(loaded?.subjects[2].enrolled).toBe(15);
       });
     });
   });

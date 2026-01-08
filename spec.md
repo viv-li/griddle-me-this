@@ -61,9 +61,6 @@ flowchart TD
     RunAlgorithm --> HasSolution{Solutions Found?}
     HasSolution -->|Yes| ShowResults[Display Dual Timetables + Steps]
     HasSolution -->|No| ShowAlternatives[Show Old Timetable + Alternatives]
-    ShowResults --> AcceptOption[Accept an Option]
-    AcceptOption --> UpdateStorage[Update Timetable Capacities]
-    UpdateStorage --> MarkApplied[Mark Request as Applied]
     ShowResults --> ViewAllRequests[Back to All Requests]
     ShowAlternatives --> ViewAllRequests
     ViewHistory --> SelectRequest[Select Past Request]
@@ -165,13 +162,6 @@ The core algorithm finds all valid timetable configurations where:
 - Capacity status for each affected class
 - Multiple options shown as expandable cards, ranked by feasibility
 - First solution marked as "Recommended" and expanded by default
-- **Accept button** for each option to apply the change
-
-**When accepting a solution:**
-
-- Update localStorage timetable data with new enrollment counts
-- Mark the request as "Applied" in history
-- Show confirmation of changes made
 
 **When no solution exists:**
 
@@ -251,8 +241,6 @@ interface ChangeRequest {
   pickupSubject: string; // Level + subject code, e.g., "11HIM"
   createdAt: string; // ISO timestamp
   timetableVersion: string; // uploadedAt of timetable used
-  status: "pending" | "applied";
-  appliedSolutionIndex?: number; // Which solution was accepted
 }
 
 interface Solution {
@@ -372,4 +360,4 @@ Labels can be edited by clicking on them, which transforms the text into an inpu
 - Support for multiple year levels beyond Year 10
 - Bulk check multiple students at once
 - Export results to PDF/CSV
-- Undo applied changes
+- Apply solutions and track enrollment changes

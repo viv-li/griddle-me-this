@@ -54,9 +54,6 @@ export interface TimetableData {
 // Change Request Types
 // =============================================================================
 
-/** Status of a change request */
-export type RequestStatus = "pending" | "applied";
-
 /**
  * A student's subject change request.
  * Stores what the student wants to change and the context for the algorithm.
@@ -76,10 +73,6 @@ export interface ChangeRequest {
   createdAt: string;
   /** uploadedAt timestamp of the timetable used when this request was created */
   timetableVersion: string;
-  /** Current status of this request */
-  status: RequestStatus;
-  /** Index of the solution that was accepted (if applied) */
-  appliedSolutionIndex?: number;
 }
 
 // =============================================================================

@@ -55,7 +55,6 @@ function App() {
       pickupSubject: data.pickupSubject,
       createdAt: new Date().toISOString(),
       timetableVersion: timetable.uploadedAt,
-      status: "pending",
     };
 
     // Get the student's current schedule as Subject objects
@@ -248,7 +247,7 @@ function App() {
                   onClick={() => setCurrentView("newRequest")}
                 >
                   <Plus className="mr-2 h-4 w-4" />
-                  Change Request
+                  New Request
                 </NavigationMenuLink>
               </NavigationMenuItem>
               <NavigationMenuItem>
