@@ -1,0 +1,1182 @@
+[
+  {
+    "allocation": "AL1",
+    "code": "10HIS8",
+    "level": 10,
+    "subject": "HIS",
+    "class": 8,
+    "semester": "sem2",
+    "enrolled": 27,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL1",
+    "code": "10PED9",
+    "level": 10,
+    "subject": "PED",
+    "class": 9,
+    "semester": "sem1",
+    "enrolled": 25,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL1",
+    "code": "10BEN1",
+    "level": 10,
+    "subject": "BEN",
+    "class": 1,
+    "semester": "both",
+    "enrolled": 0,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL1",
+    "code": "10ENG3",
+    "level": 10,
+    "subject": "ENG",
+    "class": 3,
+    "semester": "both",
+    "enrolled": 26,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL1",
+    "code": "10ENG5",
+    "level": 10,
+    "subject": "ENG",
+    "class": 5,
+    "semester": "both",
+    "enrolled": 26,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL1",
+    "code": "10MTA1",
+    "level": 10,
+    "subject": "MTA",
+    "class": 1,
+    "semester": "both",
+    "enrolled": 25,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL1",
+    "code": "10MTF1",
+    "level": 10,
+    "subject": "MTF",
+    "class": 1,
+    "semester": "both",
+    "enrolled": 24,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL1",
+    "code": "11EAL11",
+    "level": 11,
+    "subject": "EAL",
+    "class": 11,
+    "semester": "both",
+    "enrolled": 0,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL1",
+    "code": "11MTG1",
+    "level": 11,
+    "subject": "MTG",
+    "class": 1,
+    "semester": "both",
+    "enrolled": 24,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL1",
+    "code": "11PSY1",
+    "level": 11,
+    "subject": "PSY",
+    "class": 1,
+    "semester": "both",
+    "enrolled": 26,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL1",
+    "code": "11SYS1",
+    "level": 11,
+    "subject": "SYS",
+    "class": 1,
+    "semester": "both",
+    "enrolled": 23,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL1",
+    "code": "11VCK1",
+    "level": 11,
+    "subject": "VCK",
+    "class": 1,
+    "semester": "both",
+    "enrolled": 15,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL1",
+    "code": "11VHR1",
+    "level": 11,
+    "subject": "VHR",
+    "class": 1,
+    "semester": "both",
+    "enrolled": 19,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL1",
+    "code": "11VMU1",
+    "level": 11,
+    "subject": "VMU",
+    "class": 1,
+    "semester": "both",
+    "enrolled": 12,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL1",
+    "code": "11VSC1",
+    "level": 11,
+    "subject": "VSC",
+    "class": 1,
+    "semester": "both",
+    "enrolled": 22,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL1",
+    "code": "10ENV1",
+    "level": 10,
+    "subject": "ENV",
+    "class": 1,
+    "semester": "sem2",
+    "enrolled": 25,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL1",
+    "code": "10HHD8",
+    "level": 10,
+    "subject": "HHD",
+    "class": 8,
+    "semester": "sem2",
+    "enrolled": 24,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL1",
+    "code": "10PED6",
+    "level": 10,
+    "subject": "PED",
+    "class": 6,
+    "semester": "sem2",
+    "enrolled": 21,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL1",
+    "code": "10BIO3",
+    "level": 10,
+    "subject": "BIO",
+    "class": 3,
+    "semester": "sem1",
+    "enrolled": 24,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL1",
+    "code": "10HHD7",
+    "level": 10,
+    "subject": "HHD",
+    "class": 7,
+    "semester": "sem1",
+    "enrolled": 23,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL1",
+    "code": "10HIS7",
+    "level": 10,
+    "subject": "HIS",
+    "class": 7,
+    "semester": "sem1",
+    "enrolled": 26,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL2",
+    "code": "10HHD9",
+    "level": 10,
+    "subject": "HHD",
+    "class": 9,
+    "semester": "sem2",
+    "enrolled": 26,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL2",
+    "code": "10FOD5",
+    "level": 10,
+    "subject": "FOD",
+    "class": 5,
+    "semester": "sem1",
+    "enrolled": 22,
+    "capacity": 22
+  },
+  {
+    "allocation": "AL2",
+    "code": "10EAL1",
+    "level": 10,
+    "subject": "EAL",
+    "class": 1,
+    "semester": "both",
+    "enrolled": 14,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL2",
+    "code": "10MTA2",
+    "level": 10,
+    "subject": "MTA",
+    "class": 2,
+    "semester": "both",
+    "enrolled": 26,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL2",
+    "code": "10MTG3",
+    "level": 10,
+    "subject": "MTG",
+    "class": 3,
+    "semester": "both",
+    "enrolled": 26,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL2",
+    "code": "10MTG4",
+    "level": 10,
+    "subject": "MTG",
+    "class": 4,
+    "semester": "both",
+    "enrolled": 26,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL2",
+    "code": "11BIO2",
+    "level": 11,
+    "subject": "BIO",
+    "class": 2,
+    "semester": "both",
+    "enrolled": 25,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL2",
+    "code": "11MED2",
+    "level": 11,
+    "subject": "MED",
+    "class": 2,
+    "semester": "both",
+    "enrolled": 25,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL2",
+    "code": "11MTG2",
+    "level": 11,
+    "subject": "MTG",
+    "class": 2,
+    "semester": "both",
+    "enrolled": 23,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL2",
+    "code": "11MTG7",
+    "level": 11,
+    "subject": "MTG",
+    "class": 7,
+    "semester": "both",
+    "enrolled": 22,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL2",
+    "code": "11PDT2",
+    "level": 11,
+    "subject": "PDT",
+    "class": 2,
+    "semester": "both",
+    "enrolled": 25,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL2",
+    "code": "10FOD6",
+    "level": 10,
+    "subject": "FOD",
+    "class": 6,
+    "semester": "sem2",
+    "enrolled": 25,
+    "capacity": 22
+  },
+  {
+    "allocation": "AL2",
+    "code": "10HHD1",
+    "level": 10,
+    "subject": "HHD",
+    "class": 1,
+    "semester": "sem2",
+    "enrolled": 28,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL2",
+    "code": "10SYS1",
+    "level": 10,
+    "subject": "SYS",
+    "class": 1,
+    "semester": "sem2",
+    "enrolled": 27,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL2",
+    "code": "10HHD2",
+    "level": 10,
+    "subject": "HHD",
+    "class": 2,
+    "semester": "sem1",
+    "enrolled": 22,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL2",
+    "code": "10PED7",
+    "level": 10,
+    "subject": "PED",
+    "class": 7,
+    "semester": "sem1",
+    "enrolled": 26,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL2",
+    "code": "10SYS2",
+    "level": 10,
+    "subject": "SYS",
+    "class": 2,
+    "semester": "sem1",
+    "enrolled": 20,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL2",
+    "code": "10VCD1",
+    "level": 10,
+    "subject": "VCD",
+    "class": 1,
+    "semester": "sem1",
+    "enrolled": 25,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL3",
+    "code": "10MTG2",
+    "level": 10,
+    "subject": "MTG",
+    "class": 2,
+    "semester": "both",
+    "enrolled": 26,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL3",
+    "code": "10ENG6",
+    "level": 10,
+    "subject": "ENG",
+    "class": 6,
+    "semester": "both",
+    "enrolled": 26,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL3",
+    "code": "10ENG7",
+    "level": 10,
+    "subject": "ENG",
+    "class": 7,
+    "semester": "both",
+    "enrolled": 26,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL3",
+    "code": "10ITA1",
+    "level": 10,
+    "subject": "ITA",
+    "class": 1,
+    "semester": "both",
+    "enrolled": 4,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL3",
+    "code": "10JAP1",
+    "level": 10,
+    "subject": "JAP",
+    "class": 1,
+    "semester": "both",
+    "enrolled": 10,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL3",
+    "code": "11HIA3",
+    "level": 11,
+    "subject": "HIA",
+    "class": 3,
+    "semester": "both",
+    "enrolled": 19,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL3",
+    "code": "11LEG3",
+    "level": 11,
+    "subject": "LEG",
+    "class": 3,
+    "semester": "both",
+    "enrolled": 26,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL3",
+    "code": "11MTG3",
+    "level": 11,
+    "subject": "MTG",
+    "class": 3,
+    "semester": "both",
+    "enrolled": 26,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL3",
+    "code": "11MTM3",
+    "level": 11,
+    "subject": "MTM",
+    "class": 3,
+    "semester": "both",
+    "enrolled": 22,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL3",
+    "code": "10ART1",
+    "level": 10,
+    "subject": "ART",
+    "class": 1,
+    "semester": "sem2",
+    "enrolled": 23,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL3",
+    "code": "10BIO1",
+    "level": 10,
+    "subject": "BIO",
+    "class": 1,
+    "semester": "sem2",
+    "enrolled": 26,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL3",
+    "code": "10HIS3",
+    "level": 10,
+    "subject": "HIS",
+    "class": 3,
+    "semester": "sem2",
+    "enrolled": 23,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL3",
+    "code": "10PED8",
+    "level": 10,
+    "subject": "PED",
+    "class": 8,
+    "semester": "sem2",
+    "enrolled": 23,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL3",
+    "code": "10THS2",
+    "level": 10,
+    "subject": "THS",
+    "class": 2,
+    "semester": "sem2",
+    "enrolled": 19,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL3",
+    "code": "10ART2",
+    "level": 10,
+    "subject": "ART",
+    "class": 2,
+    "semester": "sem1",
+    "enrolled": 21,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL3",
+    "code": "10BIO2",
+    "level": 10,
+    "subject": "BIO",
+    "class": 2,
+    "semester": "sem1",
+    "enrolled": 26,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL3",
+    "code": "10HIS4",
+    "level": 10,
+    "subject": "HIS",
+    "class": 4,
+    "semester": "sem1",
+    "enrolled": 25,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL3",
+    "code": "10PED5",
+    "level": 10,
+    "subject": "PED",
+    "class": 5,
+    "semester": "sem1",
+    "enrolled": 19,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL3",
+    "code": "10THS1",
+    "level": 10,
+    "subject": "THS",
+    "class": 1,
+    "semester": "sem1",
+    "enrolled": 23,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL4",
+    "code": "10DAP1",
+    "level": 10,
+    "subject": "DAP",
+    "class": 1,
+    "semester": "sem2",
+    "enrolled": 23,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL4",
+    "code": "10LIT1",
+    "level": 10,
+    "subject": "LIT",
+    "class": 1,
+    "semester": "sem1",
+    "enrolled": 13,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL4",
+    "code": "10ENG1",
+    "level": 10,
+    "subject": "ENG",
+    "class": 1,
+    "semester": "both",
+    "enrolled": 28,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL4",
+    "code": "10MTG1",
+    "level": 10,
+    "subject": "MTG",
+    "class": 1,
+    "semester": "both",
+    "enrolled": 26,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL4",
+    "code": "11ACM4",
+    "level": 11,
+    "subject": "ACM",
+    "class": 4,
+    "semester": "both",
+    "enrolled": 13,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL4",
+    "code": "11MTG4",
+    "level": 11,
+    "subject": "MTG",
+    "class": 4,
+    "semester": "both",
+    "enrolled": 16,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL4",
+    "code": "11PSY4",
+    "level": 11,
+    "subject": "PSY",
+    "class": 4,
+    "semester": "both",
+    "enrolled": 26,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL4",
+    "code": "10FOD1",
+    "level": 10,
+    "subject": "FOD",
+    "class": 1,
+    "semester": "sem2",
+    "enrolled": 21,
+    "capacity": 22
+  },
+  {
+    "allocation": "AL4",
+    "code": "10HHD4",
+    "level": 10,
+    "subject": "HHD",
+    "class": 4,
+    "semester": "sem2",
+    "enrolled": 18,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL4",
+    "code": "10HIS2",
+    "level": 10,
+    "subject": "HIS",
+    "class": 2,
+    "semester": "sem2",
+    "enrolled": 24,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL4",
+    "code": "10LEG1",
+    "level": 10,
+    "subject": "LEG",
+    "class": 1,
+    "semester": "sem2",
+    "enrolled": 22,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL4",
+    "code": "10PDT2",
+    "level": 10,
+    "subject": "PDT",
+    "class": 2,
+    "semester": "sem2",
+    "enrolled": 22,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL4",
+    "code": "10PHI1",
+    "level": 10,
+    "subject": "PHI",
+    "class": 1,
+    "semester": "sem2",
+    "enrolled": 23,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL4",
+    "code": "10FOD2",
+    "level": 10,
+    "subject": "FOD",
+    "class": 2,
+    "semester": "sem1",
+    "enrolled": 21,
+    "capacity": 22
+  },
+  {
+    "allocation": "AL4",
+    "code": "10HHD3",
+    "level": 10,
+    "subject": "HHD",
+    "class": 3,
+    "semester": "sem1",
+    "enrolled": 25,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL4",
+    "code": "10HIS1",
+    "level": 10,
+    "subject": "HIS",
+    "class": 1,
+    "semester": "sem1",
+    "enrolled": 25,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL4",
+    "code": "10LEG2",
+    "level": 10,
+    "subject": "LEG",
+    "class": 2,
+    "semester": "sem1",
+    "enrolled": 24,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL4",
+    "code": "10MED3",
+    "level": 10,
+    "subject": "MED",
+    "class": 3,
+    "semester": "sem1",
+    "enrolled": 21,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL4",
+    "code": "10PDT1",
+    "level": 10,
+    "subject": "PDT",
+    "class": 1,
+    "semester": "sem1",
+    "enrolled": 25,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL5",
+    "code": "10ENG4",
+    "level": 10,
+    "subject": "ENG",
+    "class": 4,
+    "semester": "both",
+    "enrolled": 23,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL5",
+    "code": "10ENG8",
+    "level": 10,
+    "subject": "ENG",
+    "class": 8,
+    "semester": "both",
+    "enrolled": 23,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL5",
+    "code": "10LTY1",
+    "level": 10,
+    "subject": "LTY",
+    "class": 1,
+    "semester": "both",
+    "enrolled": 12,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL5",
+    "code": "10MTG5",
+    "level": 10,
+    "subject": "MTG",
+    "class": 5,
+    "semester": "both",
+    "enrolled": 24,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL5",
+    "code": "11BIO5",
+    "level": 11,
+    "subject": "BIO",
+    "class": 5,
+    "semester": "both",
+    "enrolled": 23,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL5",
+    "code": "11FOD5",
+    "level": 11,
+    "subject": "FOD",
+    "class": 5,
+    "semester": "both",
+    "enrolled": 10,
+    "capacity": 22
+  },
+  {
+    "allocation": "AL5",
+    "code": "11LEG5",
+    "level": 11,
+    "subject": "LEG",
+    "class": 5,
+    "semester": "both",
+    "enrolled": 23,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL5",
+    "code": "11MUS5",
+    "level": 11,
+    "subject": "MUS",
+    "class": 5,
+    "semester": "both",
+    "enrolled": 13,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL5",
+    "code": "11THS5",
+    "level": 11,
+    "subject": "THS",
+    "class": 5,
+    "semester": "both",
+    "enrolled": 25,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL5",
+    "code": "10CHE2",
+    "level": 10,
+    "subject": "CHE",
+    "class": 2,
+    "semester": "sem2",
+    "enrolled": 20,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL5",
+    "code": "10ECO1",
+    "level": 10,
+    "subject": "ECO",
+    "class": 1,
+    "semester": "sem2",
+    "enrolled": 19,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL5",
+    "code": "10FOD4",
+    "level": 10,
+    "subject": "FOD",
+    "class": 4,
+    "semester": "sem2",
+    "enrolled": 20,
+    "capacity": 22
+  },
+  {
+    "allocation": "AL5",
+    "code": "10HIS6",
+    "level": 10,
+    "subject": "HIS",
+    "class": 6,
+    "semester": "sem2",
+    "enrolled": 13,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL5",
+    "code": "10PED4",
+    "level": 10,
+    "subject": "PED",
+    "class": 4,
+    "semester": "sem2",
+    "enrolled": 23,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL5",
+    "code": "10SCG1",
+    "level": 10,
+    "subject": "SCG",
+    "class": 1,
+    "semester": "sem2",
+    "enrolled": 20,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL5",
+    "code": "10BUS1",
+    "level": 10,
+    "subject": "BUS",
+    "class": 1,
+    "semester": "sem1",
+    "enrolled": 24,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL5",
+    "code": "10CHE1",
+    "level": 10,
+    "subject": "CHE",
+    "class": 1,
+    "semester": "sem1",
+    "enrolled": 18,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL5",
+    "code": "10FOD3",
+    "level": 10,
+    "subject": "FOD",
+    "class": 3,
+    "semester": "sem1",
+    "enrolled": 18,
+    "capacity": 22
+  },
+  {
+    "allocation": "AL5",
+    "code": "10HIS5",
+    "level": 10,
+    "subject": "HIS",
+    "class": 5,
+    "semester": "sem1",
+    "enrolled": 16,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL5",
+    "code": "10PED3",
+    "level": 10,
+    "subject": "PED",
+    "class": 3,
+    "semester": "sem1",
+    "enrolled": 23,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL5",
+    "code": "10SCG2",
+    "level": 10,
+    "subject": "SCG",
+    "class": 2,
+    "semester": "sem1",
+    "enrolled": 20,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL6",
+    "code": "10POL1",
+    "level": 10,
+    "subject": "POL",
+    "class": 1,
+    "semester": "sem2",
+    "enrolled": 18,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL6",
+    "code": "10PHY1",
+    "level": 10,
+    "subject": "PHY",
+    "class": 1,
+    "semester": "sem1",
+    "enrolled": 26,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL6",
+    "code": "10ENG2",
+    "level": 10,
+    "subject": "ENG",
+    "class": 2,
+    "semester": "both",
+    "enrolled": 20,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL6",
+    "code": "11BIO6",
+    "level": 11,
+    "subject": "BIO",
+    "class": 6,
+    "semester": "both",
+    "enrolled": 26,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL6",
+    "code": "11HIM6",
+    "level": 11,
+    "subject": "HIM",
+    "class": 6,
+    "semester": "both",
+    "enrolled": 23,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL6",
+    "code": "11MED6",
+    "level": 11,
+    "subject": "MED",
+    "class": 6,
+    "semester": "both",
+    "enrolled": 20,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL6",
+    "code": "11MTM6",
+    "level": 11,
+    "subject": "MTM",
+    "class": 6,
+    "semester": "both",
+    "enrolled": 26,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL6",
+    "code": "10CER1",
+    "level": 10,
+    "subject": "CER",
+    "class": 1,
+    "semester": "sem2",
+    "enrolled": 28,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL6",
+    "code": "10DAN1",
+    "level": 10,
+    "subject": "DAN",
+    "class": 1,
+    "semester": "sem2",
+    "enrolled": 20,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL6",
+    "code": "10HHD5",
+    "level": 10,
+    "subject": "HHD",
+    "class": 5,
+    "semester": "sem2",
+    "enrolled": 29,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL6",
+    "code": "10MED1",
+    "level": 10,
+    "subject": "MED",
+    "class": 1,
+    "semester": "sem2",
+    "enrolled": 27,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL6",
+    "code": "10PED2",
+    "level": 10,
+    "subject": "PED",
+    "class": 2,
+    "semester": "sem2",
+    "enrolled": 26,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL6",
+    "code": "10PSY2",
+    "level": 10,
+    "subject": "PSY",
+    "class": 2,
+    "semester": "sem2",
+    "enrolled": 30,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL6",
+    "code": "10CER2",
+    "level": 10,
+    "subject": "CER",
+    "class": 2,
+    "semester": "sem1",
+    "enrolled": 20,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL6",
+    "code": "10HHD6",
+    "level": 10,
+    "subject": "HHD",
+    "class": 6,
+    "semester": "sem1",
+    "enrolled": 18,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL6",
+    "code": "10HIS9",
+    "level": 10,
+    "subject": "HIS",
+    "class": 9,
+    "semester": "sem1",
+    "enrolled": 26,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL6",
+    "code": "10MED2",
+    "level": 10,
+    "subject": "MED",
+    "class": 2,
+    "semester": "sem1",
+    "enrolled": 21,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL6",
+    "code": "10MUS1",
+    "level": 10,
+    "subject": "MUS",
+    "class": 1,
+    "semester": "sem1",
+    "enrolled": 19,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL6",
+    "code": "10PED1",
+    "level": 10,
+    "subject": "PED",
+    "class": 1,
+    "semester": "sem1",
+    "enrolled": 25,
+    "capacity": 25
+  },
+  {
+    "allocation": "AL6",
+    "code": "10PSY1",
+    "level": 10,
+    "subject": "PSY",
+    "class": 1,
+    "semester": "sem1",
+    "enrolled": 26,
+    "capacity": 25
+  }
+]
