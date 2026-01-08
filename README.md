@@ -64,6 +64,7 @@ npm run preview
 src/
 ├── components/                    # React components
 │   ├── ui/                       # shadcn/ui components
+│   ├── ErrorBoundary.tsx         # Global error handling
 │   ├── TimetableUpload.tsx       # JSON upload with timetable overview
 │   ├── StudentSubjectInput.tsx   # Autocomplete multi-select with validation
 │   ├── ChangeRequestForm.tsx     # Searchable drop/pickup selection
@@ -97,6 +98,7 @@ src/
 - Vite (build tool)
 - Tailwind CSS (styling)
 - shadcn/ui (component library)
+- Switzer font (via Fontshare)
 - Jest with ts-jest (testing)
 - LocalStorage (data persistence)
 

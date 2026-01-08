@@ -298,30 +298,36 @@ Wire up UI components to the App shell - end-to-end flow testable after this pha
 
 ---
 
-## Phase 5: Polish
+## Phase 5: Polish ✅
 
 ### 5.1 Error Handling
 
 - Error boundary component for graceful failures
 - Clear error messages for validation failures
 - Handle edge cases (empty timetable, no subjects match, etc.)
+- Incompatible request detection when timetable changes remove subjects used in saved requests
+- Contextual messages when user searches for subjects they're already enrolled in
 
 ### 5.2 Loading & Empty States
 
 - Loading indicators during algorithm computation (if needed)
-- Empty states for: no timetable uploaded, no history, no solutions
+- Empty states with clear CTAs for: no timetable uploaded, no requests yet, no solutions
+- Prompt modal encouraging new request creation after timetable upload
+- Dynamic navigation based on app state (home link adapts to context)
 
 ### 5.3 Inline Feedback
 
 - Contextual success/error messages displayed inline near the triggering action
 - Status changes reflected immediately in UI state (badges, disabled buttons, visual updates)
 - Confirmation dialogs for destructive actions (delete request)
+- Visual differentiation for semester types in schedule displays
 
 ### 5.4 Visual Refinements
 
-- Consistent spacing and typography
-- Ensure adequate color contrast for accessibility
-- Polish transitions between views
+- Custom webfont for distinctive typography
+- Branded color scheme with primary accent and warm neutral tones
+- Custom favicon reflecting the app theme
+- Consistent spacing and adequate color contrast for accessibility
 
 ---
 

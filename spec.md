@@ -354,6 +354,30 @@ Labels can be edited by clicking on them, which transforms the text into an inpu
 
 ---
 
+## Visual Design
+
+### Typography
+
+- **Primary font**: Switzer (via Fontshare) - a Swiss-style neo-grotesque with modern touches
+- Weights: 400 (regular), 500 (medium), 600 (semibold), 700 (bold)
+
+### Color Scheme
+
+- **Primary**: Blue accent for interactive elements and CTAs
+- **Neutrals**: Warm gray tones for backgrounds, borders, and text
+- **Semantic colors**: Green (success/solutions found), red (errors/no solutions), amber (warnings/outdated)
+
+### Favicon
+
+- Grid-themed SVG icon with four colored squares representing the allocation grid concept
+
+### Error Handling
+
+- Global ErrorBoundary component wraps the app for graceful failure recovery
+- Displays friendly error message with reload option
+
+---
+
 ## Future Enhancements (Out of MVP Scope)
 
 - Change to different class of same subject (avoid specific teacher)
@@ -361,3 +385,7 @@ Labels can be edited by clicking on them, which transforms the text into an inpu
 - Bulk check multiple students at once
 - Export results to PDF/CSV
 - Apply solutions and track enrollment changes
+- Timetable version history (save and restore previous versions)
+- Archive/resolve actioned requests without deleting
+- Motion and transitions for UI polish
+- Dark mode support

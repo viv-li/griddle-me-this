@@ -249,9 +249,23 @@ function App() {
         <header className="border-b">
           <div className="container mx-auto flex h-16 items-center justify-between px-4">
             <h1
-              className="cursor-pointer text-xl font-bold"
+              className="cursor-pointer text-xl font-bold flex items-center gap-2"
               onClick={navigateHome}
             >
+              <svg viewBox="0 0 32 32" className="h-7 w-7">
+                <rect width="32" height="32" rx="6" fill="#18181b" />
+                <rect x="5" y="5" width="9" height="9" rx="2" fill="#3b82f6" />
+                <rect x="18" y="5" width="9" height="9" rx="2" fill="#22c55e" />
+                <rect x="5" y="18" width="9" height="9" rx="2" fill="#8b5cf6" />
+                <rect
+                  x="18"
+                  y="18"
+                  width="9"
+                  height="9"
+                  rx="2"
+                  fill="#f59e0b"
+                />
+              </svg>
               Griddle Me This
             </h1>
             <NavigationMenu>
@@ -304,7 +318,7 @@ function App() {
         </header>
 
         {/* Main Content */}
-        <main className="container mx-auto py-8">{renderView()}</main>
+        <main className="container mx-auto px-4 py-8">{renderView()}</main>
 
         {/* New Request Prompt Modal */}
         <Dialog
