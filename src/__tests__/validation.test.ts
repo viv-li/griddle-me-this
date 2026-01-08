@@ -2,7 +2,11 @@
  * Tests for validation functions
  */
 
-import { validateStudentSchedule } from "../lib/validation";
+import {
+  validateTimetableJSON,
+  validateStudentSchedule,
+  getStudentSubjects,
+} from "../lib/validation";
 import type { Subject } from "../types";
 
 // Helper to create test subjects
@@ -152,6 +156,162 @@ describe("validation", () => {
 
       expect(result.valid).toBe(false);
       expect(result.missingSlots).toHaveLength(12); // 6 allocations × 2 semesters
+    });
+  });
+
+  describe("validateTimetableJSON", () => {
+    const validSubject = {
+      allocation: "AL1",
+      code: "10ENG1",
+      level: 10,
+      subject: "ENG",
+      class: 1,
+      semester: "both",
+      enrolled: 20,
+      capacity: 25,
+    };
+
+    it("should validate a valid timetable array", () => {
+      const result = validateTimetableJSON([validSubject]);
+
+      expect(result.valid).toBe(true);
+      expect(result.error).toBeUndefined();
+    });
+
+    it("should reject non-array data", () => {
+      const result = validateTimetableJSON({ subjects: [] });
+
+      expect(result.valid).toBe(false);
+      expect(result.error).toBe("Timetable must be an array of subjects");
+    });
+
+    it("should reject empty array", () => {
+      const result = validateTimetableJSON([]);
+
+      expect(result.valid).toBe(false);
+      expect(result.error).toBe("Timetable must contain at least one subject");
+    });
+
+    it("should reject non-object elements", () => {
+      const result = validateTimetableJSON(["not an object"]);
+
+      expect(result.valid).toBe(false);
+      expect(result.error).toContain("must be an object");
+    });
+
+    it("should reject invalid allocation", () => {
+      const result = validateTimetableJSON([
+        { ...validSubject, allocation: "AL7" },
+      ]);
+
+      expect(result.valid).toBe(false);
+      expect(result.error).toContain("invalid allocation");
+    });
+
+    it("should reject empty code", () => {
+      const result = validateTimetableJSON([{ ...validSubject, code: "" }]);
+
+      expect(result.valid).toBe(false);
+      expect(result.error).toContain("code must be a non-empty string");
+    });
+
+    it("should reject invalid semester", () => {
+      const result = validateTimetableJSON([
+        { ...validSubject, semester: "winter" },
+      ]);
+
+      expect(result.valid).toBe(false);
+      expect(result.error).toContain("invalid semester");
+    });
+
+    it("should reject non-integer level", () => {
+      const result = validateTimetableJSON([{ ...validSubject, level: 10.5 }]);
+
+      expect(result.valid).toBe(false);
+      expect(result.error).toContain("level must be a positive integer");
+    });
+
+    it("should reject negative level", () => {
+      const result = validateTimetableJSON([{ ...validSubject, level: -1 }]);
+
+      expect(result.valid).toBe(false);
+      expect(result.error).toContain("level must be a positive integer");
+    });
+
+    it("should reject negative enrolled", () => {
+      const result = validateTimetableJSON([{ ...validSubject, enrolled: -5 }]);
+
+      expect(result.valid).toBe(false);
+      expect(result.error).toContain("enrolled must be a non-negative integer");
+    });
+
+    it("should accept zero enrolled", () => {
+      const result = validateTimetableJSON([{ ...validSubject, enrolled: 0 }]);
+
+      expect(result.valid).toBe(true);
+    });
+
+    it("should reject zero capacity", () => {
+      const result = validateTimetableJSON([{ ...validSubject, capacity: 0 }]);
+
+      expect(result.valid).toBe(false);
+      expect(result.error).toContain("capacity must be a positive integer");
+    });
+
+    it("should include index in error message", () => {
+      const result = validateTimetableJSON([
+        validSubject,
+        { ...validSubject, code: "" },
+      ]);
+
+      expect(result.valid).toBe(false);
+      expect(result.error).toContain("index 1");
+    });
+  });
+
+  describe("getStudentSubjects", () => {
+    it("should extract unique level+subject identifiers", () => {
+      const schedule: Subject[] = [
+        createSubject({ code: "10ENG1" }),
+        createSubject({ code: "10MTA2" }),
+        createSubject({ code: "11HIM3" }),
+      ];
+
+      const subjects = getStudentSubjects(schedule);
+
+      expect(subjects).toHaveLength(3);
+      expect(subjects).toContain("10ENG");
+      expect(subjects).toContain("10MTA");
+      expect(subjects).toContain("11HIM");
+    });
+
+    it("should deduplicate when student has multiple classes of same subject", () => {
+      // Student has two ENG classes (shouldn't happen, but test dedup)
+      const schedule: Subject[] = [
+        createSubject({ code: "10ENG1" }),
+        createSubject({ code: "10ENG2" }),
+        createSubject({ code: "10MTA1" }),
+      ];
+
+      const subjects = getStudentSubjects(schedule);
+
+      expect(subjects).toHaveLength(2);
+      expect(subjects).toContain("10ENG");
+      expect(subjects).toContain("10MTA");
+    });
+
+    it("should handle empty schedule", () => {
+      const subjects = getStudentSubjects([]);
+
+      expect(subjects).toEqual([]);
+    });
+
+    it("should handle multi-digit class numbers", () => {
+      const schedule: Subject[] = [createSubject({ code: "11EAL11" })];
+
+      const subjects = getStudentSubjects(schedule);
+
+      expect(subjects).toContain("11EAL");
     });
   });
 });
