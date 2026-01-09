@@ -12,6 +12,7 @@ import {
   Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Card,
   CardContent,
@@ -98,7 +99,17 @@ Screenshot description and context
 
 Instructions
 
-- Read all of the information from this screenshot and convert it to the same json format as in this example: { "allocation": "AL6", "code": "11HIM6", "level": 11, "subject": "HIM", "class": 6, "semester": "both", "enrolled": 23, "capacity": 25 } 
+- Read all of the information from this screenshot and convert it to the same json format as in the following format:
+[{
+  "allocation": "AL1",    // AL1-AL6
+  "code": "10ENG1",       // Full subject code
+  "level": 10,            // Year level (10, 11, 12)
+  "subject": "ENG",       // 3-letter subject code
+  "class": 1,             // Class number
+  "semester": "both",     // "sem1", "sem2", or "both"
+  "enrolled": 23,         // Current enrollment
+  "capacity": 25          // Max capacity
+}]
 - Put generated json into a separate artefact. As you're given successive screenshots in a conversation append it to the artefact.
 - Make sure you actually read and parse everything in the screenshot
 - NEVER just generate random data that fits the pattern. If you're unsure of something because the screenshot is unclear flag that in your reply`;
@@ -127,9 +138,11 @@ function FormatHelpCard() {
                   <HelpCircle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                 </div>
                 <div className="text-left">
-                  <CardTitle className="text-base">Data Format Help</CardTitle>
+                  <CardTitle className="text-base">
+                    Need Help Getting Data?
+                  </CardTitle>
                   <CardDescription>
-                    Expected JSON format & how to extract data using AI
+                    Use Claude AI to extract timetable data from screenshots
                   </CardDescription>
                 </div>
               </div>
@@ -145,56 +158,44 @@ function FormatHelpCard() {
         </CollapsibleTrigger>
 
         <CollapsibleContent>
-          <CardContent className="space-y-6 pt-0">
-            {/* Expected JSON Format Section */}
-            <div className="space-y-3">
-              <h4 className="font-semibold text-sm flex items-center gap-2">
-                <FileJson className="h-4 w-4 text-blue-500" />
-                Expected JSON Format
-              </h4>
-              <p className="text-sm text-muted-foreground">
-                Upload a JSON file containing an array of subject objects. Each
-                subject should have these fields:
-              </p>
-              <pre className="rounded-lg bg-slate-900 text-slate-100 p-4 text-xs font-mono overflow-x-auto">
-                <code>{`[{
-  "allocation": "AL1",    // AL1-AL6
-  "code": "10ENG1",       // Full subject code
-  "level": 10,            // Year level (10, 11, 12)
-  "subject": "ENG",       // 3-letter subject code
-  "class": 1,             // Class number
-  "semester": "both",     // "sem1", "sem2", or "both"
-  "enrolled": 23,         // Current enrollment
-  "capacity": 25          // Max capacity
-}]`}</code>
-              </pre>
-            </div>
-
-            {/* Divider */}
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-dashed" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">
-                  Need to extract data from screenshots?
-                </span>
-              </div>
-            </div>
-
-            {/* Claude AI Extraction Section */}
-            <div className="space-y-3">
+          <CardContent className="space-y-8 pt-0">
+            {/* Steps */}
+            <div className="space-y-2">
               <h4 className="font-semibold text-sm flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-purple-500" />
-                Extract Data Using Claude AI
+                Step by Step Instructions
               </h4>
-              <p className="text-sm text-muted-foreground">
-                If you have screenshots of allocation blocks, you can use Claude
-                to extract the data into JSON format. Create a Claude Project
-                with the following instructions, then upload screenshots of each
-                allocation block:
-              </p>
+              <Alert>
+                <AlertDescription>
+                  <ol className="list-decimal list-inside space-y-1">
+                    <li>
+                      Create a new Project at{" "}
+                      <a
+                        href="https://claude.ai"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-medium underline underline-offset-2"
+                      >
+                        claude.ai
+                      </a>
+                    </li>
+                    <li>
+                      Paste the instructions below into custom instructions
+                    </li>
+                    <li>
+                      Upload screenshots of each allocation block (AL1-AL6)
+                    </li>
+                    <li>Download the JSON and upload it here</li>
+                  </ol>
+                </AlertDescription>
+              </Alert>
+            </div>
 
+            {/* Claude Instructions */}
+            <div className="space-y-2">
+              <h4 className="font-semibold text-sm">
+                Claude Project Instructions (to copy paste)
+              </h4>
               <div className="relative">
                 <pre className="rounded-lg bg-slate-900 text-slate-100 p-4 text-xs font-mono overflow-x-auto max-h-64 overflow-y-auto">
                   <code>{CLAUDE_PROMPT}</code>
@@ -220,22 +221,6 @@ function FormatHelpCard() {
                     </>
                   )}
                 </Button>
-              </div>
-
-              <div className="rounded-lg bg-purple-50 border border-purple-200 p-3 text-sm text-purple-800 dark:bg-purple-950 dark:border-purple-800 dark:text-purple-300">
-                <p className="font-medium mb-1">How to use:</p>
-                <ol className="list-decimal list-inside space-y-1 text-xs">
-                  <li>Create a new Claude Project at claude.ai</li>
-                  <li>
-                    Paste the above instructions into the project's custom
-                    instructions
-                  </li>
-                  <li>Upload screenshots of each allocation block (AL1-AL6)</li>
-                  <li>
-                    Claude will generate JSON data you can download and upload
-                    here
-                  </li>
-                </ol>
               </div>
             </div>
           </CardContent>
@@ -531,7 +516,7 @@ export function TimetableUpload({ onTimetableChange }: TimetableUploadProps) {
           </div>
           <CardTitle>Upload Timetable</CardTitle>
           <CardDescription>
-            Upload your master timetable JSON file to get started
+            Upload your master timetable as a JSON file to get started
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -546,7 +531,7 @@ export function TimetableUpload({ onTimetableChange }: TimetableUploadProps) {
           {/* Upload button */}
           <Button onClick={handleUploadClick} className="w-full" size="lg">
             <Upload className="mr-2 h-4 w-4" />
-            Select JSON File
+            Select Timetable File
           </Button>
 
           {/* Hidden file input */}

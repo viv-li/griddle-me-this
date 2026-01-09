@@ -258,7 +258,12 @@ function App() {
               onClick={navigateHome}
             >
               <svg viewBox="0 0 32 32" className="h-7 w-7">
-                <rect width="32" height="32" rx="6" className="fill-zinc-900 dark:fill-zinc-100" />
+                <rect
+                  width="32"
+                  height="32"
+                  rx="6"
+                  className="fill-zinc-900 dark:fill-zinc-100"
+                />
                 <rect x="5" y="5" width="9" height="9" rx="2" fill="#3b82f6" />
                 <rect x="18" y="5" width="9" height="9" rx="2" fill="#22c55e" />
                 <rect x="5" y="18" width="9" height="9" rx="2" fill="#8b5cf6" />
@@ -276,51 +281,41 @@ function App() {
             <div className="flex items-center gap-2">
               <ThemeToggle />
               <NavigationMenu>
-              <NavigationMenuList>
-                <NavigationMenuItem>
-                  <NavigationMenuLink
-                    className={cn(
-                      navigationMenuTriggerStyle(),
-                      "cursor-pointer",
-                      currentView === "upload" &&
-                        "bg-accent text-accent-foreground"
-                    )}
-                    onClick={() => setCurrentView("upload")}
-                  >
-                    <Upload className="mr-2 h-4 w-4" />
-                    Timetable
-                  </NavigationMenuLink>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                  <NavigationMenuLink
-                    className={cn(
-                      navigationMenuTriggerStyle(),
-                      "cursor-pointer",
-                      currentView === "newRequest" &&
-                        "bg-accent text-accent-foreground"
-                    )}
-                    onClick={() => setCurrentView("newRequest")}
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    New Request
-                  </NavigationMenuLink>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                  <NavigationMenuLink
-                    className={cn(
-                      navigationMenuTriggerStyle(),
-                      "cursor-pointer",
-                      currentView === "history" &&
-                        "bg-accent text-accent-foreground"
-                    )}
-                    onClick={() => setCurrentView("history")}
-                  >
-                    <History className="mr-2 h-4 w-4" />
-                    All Requests
-                  </NavigationMenuLink>
-                </NavigationMenuItem>
-              </NavigationMenuList>
-            </NavigationMenu>
+                <NavigationMenuList>
+                  <NavigationMenuItem>
+                    <NavigationMenuLink
+                      className={cn(
+                        navigationMenuTriggerStyle(),
+                        "cursor-pointer",
+                        currentView === "upload" &&
+                          "bg-accent text-accent-foreground"
+                      )}
+                      onClick={() => setCurrentView("upload")}
+                    >
+                      <Upload className="mr-2 h-4 w-4" />
+                      Timetable
+                    </NavigationMenuLink>
+                  </NavigationMenuItem>
+                  <NavigationMenuItem>
+                    <NavigationMenuLink
+                      className={cn(
+                        navigationMenuTriggerStyle(),
+                        "cursor-pointer",
+                        currentView === "history" &&
+                          "bg-accent text-accent-foreground"
+                      )}
+                      onClick={() => setCurrentView("history")}
+                    >
+                      <History className="mr-2 h-4 w-4" />
+                      All Requests
+                    </NavigationMenuLink>
+                  </NavigationMenuItem>
+                </NavigationMenuList>
+              </NavigationMenu>
+              <Button onClick={() => setCurrentView("newRequest")}>
+                <Plus className="h-4 w-4" />
+                New Request
+              </Button>
             </div>
           </div>
         </header>

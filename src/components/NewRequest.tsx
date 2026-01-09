@@ -132,9 +132,26 @@ export function NewRequest({
       {!hasTimetable || hasNoTimetable ? (
         <Card>
           <CardContent className="py-8 text-center space-y-4">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-              <Upload className="h-6 w-6 text-muted-foreground" />
-            </div>
+            {/* Line illustration of a timetable grid */}
+            <svg
+              viewBox="0 0 120 80"
+              className="mx-auto h-20 w-32 text-muted-foreground/40 dark:text-muted-foreground"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <rect x="10" y="10" width="100" height="60" rx="4" />
+              <line x1="10" y1="22" x2="110" y2="22" />
+              <line x1="30" y1="10" x2="30" y2="70" />
+              <line x1="50" y1="22" x2="50" y2="70" />
+              <line x1="70" y1="22" x2="70" y2="70" />
+              <line x1="90" y1="22" x2="90" y2="70" />
+              <line x1="10" y1="46" x2="110" y2="46" />
+              <rect x="53" y="25" width="15" height="18" rx="2" className="fill-primary/20 stroke-primary" />
+              <rect x="73" y="49" width="15" height="18" rx="2" className="fill-primary/20 stroke-primary" />
+            </svg>
             <div>
               <p className="font-medium">No timetable loaded</p>
               <p className="text-sm text-muted-foreground mt-1">
@@ -143,7 +160,7 @@ export function NewRequest({
             </div>
             {onGoToUpload && (
               <Button onClick={onGoToUpload}>
-                <Upload className="mr-2 h-4 w-4" />
+                <Upload className="h-4 w-4" />
                 Upload Timetable
               </Button>
             )}
