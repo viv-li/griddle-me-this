@@ -71,7 +71,7 @@ export function RequestHistory({
         timetable.subjects,
         studentSchedule,
         request.dropSubject,
-        request.pickupSubject
+        request.pickupSubjects
       );
       const rankedSolutions = rankSolutions(solutions, timetable.subjects);
       const hasSolutions = rankedSolutions.length > 0;
@@ -100,7 +100,7 @@ export function RequestHistory({
       timetable.subjects,
       studentSchedule,
       request.dropSubject,
-      request.pickupSubject
+      request.pickupSubjects
     );
 
     const rankedSolutions = rankSolutions(solutions, timetable.subjects);

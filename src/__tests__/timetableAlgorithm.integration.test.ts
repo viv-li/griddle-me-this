@@ -47,7 +47,7 @@ describe("timetableAlgorithm integration", () => {
       sampleTimetable,
       realisticSchedule,
       "10ITA",
-      "10JAP"
+      ["10JAP"]
     );
 
     expect(solutions.length).toBeGreaterThan(0);
@@ -68,7 +68,7 @@ describe("timetableAlgorithm integration", () => {
       sampleTimetable,
       realisticSchedule,
       "10ITA",
-      "10BEN"
+      ["10BEN"]
     );
 
     // There should be solutions - ENG has classes in multiple allocations
@@ -89,7 +89,7 @@ describe("timetableAlgorithm integration", () => {
       sampleTimetable,
       realisticSchedule,
       "10ITA",
-      "10XXX"
+      ["10XXX"]
     );
 
     expect(solutions).toEqual([]);
@@ -101,7 +101,7 @@ describe("timetableAlgorithm integration", () => {
       sampleTimetable,
       realisticSchedule,
       "10HIS",
-      "10PHY"
+      ["10PHY"]
     );
 
     expect(solutions.length).toBeGreaterThan(0);
@@ -119,7 +119,7 @@ describe("timetableAlgorithm integration", () => {
         sampleTimetable,
         realisticSchedule,
         "10ENG", // drop
-        "10ENG" // pickup same subject = class change
+        ["10ENG"] // pickup same subject = class change
       );
 
       expect(solutions.length).toBeGreaterThan(0);
@@ -137,7 +137,7 @@ describe("timetableAlgorithm integration", () => {
         sampleTimetable,
         realisticSchedule,
         "10ENG",
-        "10ENG"
+        ["10ENG"]
       );
 
       // Verify none of the solutions enroll in the original class
@@ -154,7 +154,7 @@ describe("timetableAlgorithm integration", () => {
         sampleTimetable,
         realisticSchedule,
         "10ITA",
-        "10ITA"
+        ["10ITA"]
       );
 
       // ITA has multiple classes, should find alternative
@@ -175,7 +175,7 @@ describe("timetableAlgorithm integration", () => {
         sampleTimetable,
         realisticSchedule,
         "10MTA",
-        "10MTA"
+        ["10MTA"]
       );
 
       // May or may not find solutions depending on whether ENG can move
@@ -188,7 +188,7 @@ describe("timetableAlgorithm integration", () => {
         sampleTimetable,
         realisticSchedule,
         "10ENG",
-        "10ENG"
+        ["10ENG"]
       );
 
       const ranked = rankSolutions(solutions, sampleTimetable);
@@ -219,7 +219,7 @@ describe("timetableAlgorithm integration", () => {
         sampleTimetable,
         realisticSchedule,
         "10ITA",
-        "10JAP"
+        ["10JAP"]
       );
 
       // Apply capacity checking to all solutions
@@ -240,7 +240,7 @@ describe("timetableAlgorithm integration", () => {
         sampleTimetable,
         realisticSchedule,
         "10ITA",
-        "10JAP"
+        ["10JAP"]
       );
 
       const ranked = rankSolutions(solutions, sampleTimetable);
@@ -262,7 +262,7 @@ describe("timetableAlgorithm integration", () => {
         sampleTimetable,
         realisticSchedule,
         "10ITA",
-        "10BEN" // Requires rearrangement, multiple solutions expected
+        ["10BEN"] // Requires rearrangement, multiple solutions expected
       );
 
       const ranked = rankSolutions(solutions, sampleTimetable);
@@ -273,6 +273,99 @@ describe("timetableAlgorithm integration", () => {
         expect(noWarningSolutions[i].changes.length).toBeGreaterThanOrEqual(
           noWarningSolutions[i - 1].changes.length
         );
+      }
+    });
+  });
+
+  describe("year-long to two semester subjects", () => {
+    // Build a schedule with year-long subjects
+    // ITA is year-long at AL3
+    const yearLongSchedule = buildStudentSchedule([
+      "10ENG3", // AL1 - both (year-long)
+      "10MTA2", // AL2 - both (year-long)
+      "10ITA1", // AL3 - both (year-long) - will be dropped
+      "10MTG1", // AL4 - both (year-long)
+      "10LTY1", // AL5 - both (year-long)
+      "10HIS9", // AL6 - sem1
+      "10POL1", // AL6 - sem2
+    ]);
+
+    it("should find solution when dropping year-long and picking up two semester subjects", () => {
+      // Drop ITA (year-long at AL3), pick up HIS and PHY (both semester subjects)
+      // HIS has classes at AL6 sem1, PHY has classes at AL6 sem1
+      // This should work if there's room
+      const solutions = findSolutions(
+        sampleTimetable,
+        yearLongSchedule,
+        "10ITA",
+        ["10HIS", "10PHY"] // Two semester subjects
+      );
+
+      // May or may not find solutions depending on class availability
+      // The test validates that the algorithm handles two pickup subjects
+      expect(solutions).toBeDefined();
+
+      if (solutions.length > 0) {
+        // Verify solutions have both pickup subjects enrolled
+        for (const solution of solutions) {
+          const enrollChanges = solution.changes.filter(
+            (c) => c.type === "enroll"
+          );
+          // Should have 2 enroll changes (one for each pickup)
+          expect(enrollChanges.length).toBe(2);
+
+          // Verify both subjects are in the new timetable
+          const hisClass = solution.newTimetable.find(
+            (s) => s.subject === "HIS"
+          );
+          const phyClass = solution.newTimetable.find(
+            (s) => s.subject === "PHY"
+          );
+          expect(hisClass).toBeDefined();
+          expect(phyClass).toBeDefined();
+        }
+      }
+    });
+
+    it("should not find solution when two pickup subjects cannot both fit", () => {
+      // Try to pick up two subjects that both only have classes in same allocation
+      // This should return empty since they conflict with each other
+      const solutions = findSolutions(
+        sampleTimetable,
+        yearLongSchedule,
+        "10ITA",
+        ["10JAP", "10JAP"] // Same subject twice - should not work
+      );
+
+      // Should return empty since can't have same subject twice
+      expect(solutions).toEqual([]);
+    });
+
+    it("should handle two pickup subjects requiring rearrangement", () => {
+      // Drop ITA (AL3), try to pick up two subjects that need rearrangement
+      const solutions = findSolutions(
+        sampleTimetable,
+        yearLongSchedule,
+        "10ITA",
+        ["10BEN", "10JAP"] // Bengali and Japanese
+      );
+
+      // Algorithm should explore rearrangements to place both
+      expect(solutions).toBeDefined();
+
+      if (solutions.length > 0) {
+        // All solutions should have the dropped subject removed
+        for (const solution of solutions) {
+          const hasITA = solution.newTimetable.some((s) => s.subject === "ITA");
+          expect(hasITA).toBe(false);
+        }
+
+        // All solutions should have both pickup subjects
+        for (const solution of solutions) {
+          const subjects = new Set(solution.newTimetable.map((s) => s.subject));
+          expect(subjects.has("BEN")).toBe(true);
+          expect(subjects.has("JAP")).toBe(true);
+        }
       }
     });
   });

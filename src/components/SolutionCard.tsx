@@ -29,8 +29,8 @@ interface SolutionCardProps {
   originalTimetable: Subject[];
   /** Subject being dropped */
   dropSubject: string;
-  /** Subject being picked up */
-  pickupSubject: string;
+  /** Subject(s) being picked up */
+  pickupSubjects: string[];
   /** Whether the card starts expanded */
   defaultExpanded?: boolean;
 }
@@ -44,7 +44,7 @@ export function SolutionCard({
   isRecommended = false,
   originalTimetable,
   dropSubject,
-  pickupSubject,
+  pickupSubjects,
   defaultExpanded = false,
 }: SolutionCardProps) {
   const [isOpen, setIsOpen] = useState(defaultExpanded);
@@ -98,7 +98,7 @@ export function SolutionCard({
                   originalTimetable={originalTimetable}
                   newTimetable={solution.newTimetable}
                   dropSubject={dropSubject}
-                  pickupSubject={pickupSubject}
+                  pickupSubjects={pickupSubjects}
                   title="Current Timetable"
                   mode="old"
                   showLegend={false}
@@ -107,7 +107,7 @@ export function SolutionCard({
                   originalTimetable={originalTimetable}
                   newTimetable={solution.newTimetable}
                   dropSubject={dropSubject}
-                  pickupSubject={pickupSubject}
+                  pickupSubjects={pickupSubjects}
                   title="New Timetable"
                   mode="new"
                   showLegend={false}

@@ -37,7 +37,7 @@ interface CloneData {
   label?: string;
   studentSubjectCodes: string[];
   dropSubject: string;
-  pickupSubject: string;
+  pickupSubjects: string[];
   requestType?: RequestType;
 }
 
@@ -74,7 +74,7 @@ function App() {
     label: string;
     studentSubjectCodes: string[];
     dropSubject: string;
-    pickupSubject: string;
+    pickupSubjects: string[];
     requestType: RequestType;
   }) => {
     const timetable = loadTimetable();
@@ -86,7 +86,7 @@ function App() {
       label: data.label || undefined,
       studentSubjects: data.studentSubjectCodes,
       dropSubject: data.dropSubject,
-      pickupSubject: data.pickupSubject,
+      pickupSubjects: data.pickupSubjects,
       requestType: data.requestType,
       createdAt: new Date().toISOString(),
       timetableVersion: timetable.uploadedAt,
@@ -102,7 +102,7 @@ function App() {
       timetable.subjects,
       studentSchedule,
       data.dropSubject,
-      data.pickupSubject
+      data.pickupSubjects
     );
 
     // Rank the solutions (also applies capacity checks)
@@ -127,7 +127,7 @@ function App() {
       label: request.label ? `${request.label} (copy)` : undefined,
       studentSubjectCodes: request.studentSubjects,
       dropSubject: request.dropSubject,
-      pickupSubject: request.pickupSubject,
+      pickupSubjects: request.pickupSubjects,
       requestType: request.requestType,
     });
     setCurrentView("newRequest");
@@ -159,7 +159,7 @@ function App() {
       timetable.subjects,
       studentSchedule,
       currentRequest.dropSubject,
-      currentRequest.pickupSubject
+      currentRequest.pickupSubjects
     );
 
     const rankedSolutions = rankSolutions(solutions, timetable.subjects);

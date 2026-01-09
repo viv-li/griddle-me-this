@@ -507,7 +507,7 @@ describe("timetableAlgorithm", () => {
           miniTimetable,
           schedule,
           "10HIS",
-          "10ENG"
+          ["10ENG"]
         );
 
         // Should find solutions - can pick up ENG1 (AL1 free) or ENG2 (AL3 freed)
@@ -541,7 +541,7 @@ describe("timetableAlgorithm", () => {
           miniTimetable,
           schedule,
           "10GEO",
-          "10HIS"
+          ["10HIS"]
         );
 
         expect(solutions.length).toBeGreaterThan(0);
@@ -556,7 +556,7 @@ describe("timetableAlgorithm", () => {
           miniTimetable,
           schedule,
           "10ENG",
-          "10XXX" // Doesn't exist
+          ["10XXX"] // Doesn't exist
         );
 
         expect(solutions).toEqual([]);
@@ -569,7 +569,7 @@ describe("timetableAlgorithm", () => {
           miniTimetable,
           schedule,
           "10HIS", // Student doesn't have HIS
-          "10MTA"
+          ["10MTA"]
         );
 
         expect(solutions).toEqual([]);
@@ -593,7 +593,7 @@ describe("timetableAlgorithm", () => {
           miniTimetable,
           schedule,
           "10ART",
-          "10GEO"
+          ["10GEO"]
         );
 
         // Should find solutions (exact number depends on available paths)
@@ -617,7 +617,7 @@ describe("timetableAlgorithm", () => {
           miniTimetable,
           schedule,
           "10ENG", // drop ENG
-          "10ENG" // pickup ENG (same subject = class change)
+          ["10ENG"] // pickup ENG (same subject = class change)
         );
 
         // Should find at least one solution (move to ENG2)
@@ -648,7 +648,7 @@ describe("timetableAlgorithm", () => {
           miniTimetable,
           schedule,
           "10ENG",
-          "10ENG"
+          ["10ENG"]
         );
 
         // None of the solutions should end up in ENG1
@@ -688,7 +688,7 @@ describe("timetableAlgorithm", () => {
           singleClassTimetable,
           schedule,
           "10UNQ",
-          "10UNQ" // Try to change class but there's only one
+          ["10UNQ"] // Try to change class but there's only one
         );
 
         expect(solutions).toEqual([]);
@@ -711,7 +711,7 @@ describe("timetableAlgorithm", () => {
           miniTimetable,
           schedule,
           "10ENG",
-          "10ENG"
+          ["10ENG"]
         );
 
         // Should still find solutions, potentially requiring HIS to move
@@ -736,7 +736,7 @@ describe("timetableAlgorithm", () => {
           miniTimetable,
           schedule,
           "10MUS",
-          "10HIS"
+          ["10HIS"]
         );
 
         for (const solution of solutions) {
@@ -759,7 +759,7 @@ describe("timetableAlgorithm", () => {
           miniTimetable,
           schedule,
           "10MUS",
-          "10HIS"
+          ["10HIS"]
         );
 
         for (const solution of solutions) {
@@ -783,7 +783,7 @@ describe("timetableAlgorithm", () => {
           miniTimetable,
           schedule,
           "10MUS",
-          "10HIS"
+          ["10HIS"]
         );
 
         for (const solution of solutions) {
@@ -806,7 +806,7 @@ describe("timetableAlgorithm", () => {
           miniTimetable,
           schedule,
           "10MUS",
-          "10HIS"
+          ["10HIS"]
         );
 
         for (const solution of solutions) {

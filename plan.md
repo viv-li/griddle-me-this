@@ -462,6 +462,63 @@ Add a mode toggle to the change request form for "Change class" mode - user sele
 
 ---
 
+## Phase 9: Year-Long to Two Semester Subjects ✅
+
+Allow dropping one year-long subject and picking up two semester-long subjects. The UI auto-detects this case and the BFS algorithm is extended to place multiple pending classes.
+
+### 9.1 Types Update
+
+- Update [`src/types/index.ts`](src/types/index.ts):
+  - Rename `pickupSubject: string` to `pickupSubjects: string[]` in `ChangeRequest`
+  - Single pickup: `["10ART"]`, two pickups: `["10ART", "10MUS"]`
+
+### 9.2 Storage Migration
+
+- Update [`src/lib/storage.ts`](src/lib/storage.ts):
+  - On load, normalize old `pickupSubject` string to `pickupSubjects` array for backwards compatibility
+
+### 9.3 Algorithm Extension
+
+- Update [`src/lib/timetableAlgorithm.ts`](src/lib/timetableAlgorithm.ts):
+  - Change `findSolutions` signature: `pickupSubject: string` → `pickupSubjects: string[]`
+  - Change `BFSState.pendingClass: Subject | null` to `pendingClasses: Subject[]`
+  - For 2 pickups: iterate over cartesian product of (subject1 classes × subject2 classes)
+  - BFS completion: `pendingClasses.length === 0`
+  - Place each pending class without conflicts, continue with remaining pending classes
+
+### 9.4 Form UI Changes
+
+- Update [`src/components/ChangeRequestForm.tsx`](src/components/ChangeRequestForm.tsx):
+  - Remove year-long filter from pickup options when dropping year-long subject
+  - Keep semester-long filter when dropping semester-long subject
+  - When drop is year-long AND first pickup is semester: show two side-by-side pickup selects (no layout shift)
+  - Validation: year-long drop requires either 1 year-long pickup OR 2 distinct semester-long pickups
+  - Update props: `pickupSubject: string` → `pickupSubjects: string[]`
+
+### 9.5 Parent Component Updates
+
+- Update [`src/components/NewRequest.tsx`](src/components/NewRequest.tsx):
+  - Change state from `pickupSubject: string` to `pickupSubjects: string[]`
+- Update [`src/App.tsx`](src/App.tsx):
+  - Update request creation and algorithm calls to use `pickupSubjects` array
+
+### 9.6 Display Updates
+
+- Update [`src/components/RequestCard.tsx`](src/components/RequestCard.tsx):
+  - Display two pickups as "Drop 10HIS for 10ART + 10MUS"
+
+### 9.7 Tests
+
+- Update [`src/__tests__/timetableAlgorithm.test.ts`](src/__tests__/timetableAlgorithm.test.ts):
+  - Direct placement of two semester subjects (no conflicts)
+  - Two semester subjects requiring rearrangement
+  - No solution when two subjects can't both fit
+  - Verify both "enroll" changes appear in solution
+- Update [`src/__tests__/timetableAlgorithm.integration.test.ts`](src/__tests__/timetableAlgorithm.integration.test.ts):
+  - Integration test with real sample data for year→2 semesters swap
+
+---
+
 ## Test File Conventions
 
 - `*.test.ts` - Unit tests (self-contained with inline test data)

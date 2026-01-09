@@ -10,7 +10,8 @@ A frontend-only React web application for teachers to check whether a student's 
 - **Change Requests**: Two modes supported:
   - **Change Subject**: Drop one subject and pick up a different subject
   - **Change Class**: Find alternative classes of the same subject (e.g., to change teacher or allocation)
-- **Duration Filtering**: Pickup options filtered to match drop subject duration (year/semester)
+- **Year-to-Semesters Swap**: Drop one year-long subject and pick up two semester subjects
+- **Smart Duration Filtering**: Semester drops show semester options; year-long drops show all options
 - **BFS Algorithm**: Finds all valid configurations with minimal changes
 - **Dual Timetable Display**: Side-by-side current vs new timetable comparison
 - **Ranked Solutions**: Solutions sorted by capacity warnings and number of changes
@@ -170,8 +171,10 @@ A valid student schedule requires:
 
 When selecting a subject to pick up:
 
-- If dropping a year-long subject, only year-long options are shown
-- If dropping a semester subject, only semester options are shown
+- If dropping a **semester** subject, only semester options are shown
+- If dropping a **year-long** subject, all options are shown:
+  - Select one year-long subject, OR
+  - Select two semester subjects (a second dropdown appears automatically)
 
 ### Solution Display
 

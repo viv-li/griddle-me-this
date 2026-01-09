@@ -70,8 +70,8 @@ export interface ChangeRequest {
   studentSubjects: string[];
   /** Subject to drop, format: level + 3-letter code (e.g., "10HIS") */
   dropSubject: string;
-  /** Subject to pick up, format: level + 3-letter code (e.g., "11HIM"). For class-change, same as dropSubject */
-  pickupSubject: string;
+  /** Subject(s) to pick up, format: level + 3-letter code (e.g., ["11HIM"] or ["10ART", "10MUS"]) */
+  pickupSubjects: string[];
   /** Type of change: swap subjects or move to different class of same subject */
   requestType: RequestType;
   /** ISO timestamp when request was created */

@@ -133,7 +133,7 @@ export function ResultsDisplay({
               isRecommended={index === 0 && !solution.hasCapacityWarning}
               originalTimetable={originalTimetable}
               dropSubject={request.dropSubject}
-              pickupSubject={request.pickupSubject}
+              pickupSubjects={request.pickupSubjects}
               defaultExpanded={index === 0}
             />
           ))}
@@ -163,7 +163,7 @@ export function ResultsDisplay({
                 originalTimetable={originalTimetable}
                 newTimetable={originalTimetable}
                 dropSubject={request.dropSubject}
-                pickupSubject={request.pickupSubject}
+                pickupSubjects={request.pickupSubjects}
                 mode="old"
                 showLegend={false}
               />

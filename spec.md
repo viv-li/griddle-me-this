@@ -121,10 +121,17 @@ flowchart TD
 - **Searchable single-select comboboxes** for drop and pickup subjects
 - **Drop**: Select which subject (level + 3-letter code) the student wants to drop, shows duration (Year/Semester)
 - **Pick up** (Change Subject mode only): Select which subject (level + 3-letter code) the student wants to add, shows duration
-- **Duration filtering**: Pickup options filtered to match drop subject duration (year-long → year-long, semester → semester)
+- **Duration filtering**:
+  - If dropping semester-long: only semester-long pickup options shown
+  - If dropping year-long: all subjects shown (year-long OR semester-long)
+- **Year-to-semesters swap**: When dropping a year-long subject and selecting a semester-long pickup:
+  - A second pickup dropdown appears (two side-by-side selects, no layout shift)
+  - User must select two distinct semester subjects to replace the year-long subject
+  - Display: "Drop 10ITA for 10ART + 10MUS"
 - Pickup dropdown disabled until drop subject selected; clears when drop changes
 - In Change Class mode, algorithm finds all alternative classes of the selected subject
 - Example (Change Subject): Drop `10HIS` (Year 10 History), Pick up `11HIM` (Year 11 Ancient History)
+- Example (Year-to-semesters): Drop `10ITA` (year-long), Pick up `10ART` + `10MUS` (two semester subjects)
 - Example (Change Class): Find alternative class for `10ENG` to change teacher
 
 ### 5. Timetabling Algorithm
@@ -245,7 +252,7 @@ interface ChangeRequest {
   label?: string; // Optional, user-provided
   studentSubjects: string[]; // Current subject codes
   dropSubject: string; // Level + subject code, e.g., "10HIS"
-  pickupSubject: string; // Level + subject code, e.g., "11HIM" (same as dropSubject for class-change)
+  pickupSubjects: string[]; // Level + subject codes, e.g., ["11HIM"] or ["10ART", "10MUS"]
   requestType: "subject-change" | "class-change"; // Type of change request
   createdAt: string; // ISO timestamp
   timetableVersion: string; // uploadedAt of timetable used
@@ -297,15 +304,17 @@ The algorithm models the problem as a graph search:
 **Algorithm Steps:**
 
 1. **Initialize**: Remove dropped subject from student's timetable
-2. **Find target classes**: All classes of the pickup subject (level + code)
-3. **BFS exploration**:
-   - Queue starts with (current timetable, target class to add)
-   - For each state, try to place the target class
-   - If placement conflicts, generate new states by swapping the conflicting subject to alternative classes
+2. **Find target classes**: All classes for each pickup subject (level + code)
+3. **Generate combinations**: For multiple pickups, generate cartesian product of class combinations
+4. **BFS exploration**:
+   - Queue starts with (current timetable, list of pending classes to add)
+   - For each state, try to place pending classes without conflicts
+   - If placement conflicts, generate new states by swapping conflicting subjects to alternative classes
    - Track visited states to avoid cycles
    - Track path (changes made) to reach each state
-4. **Collect solutions**: All valid final states where target subject is placed and timetable is complete
-5. **Rank**: Sort by (has capacity warning ASC, number of changes ASC)
+   - Continue until all pending classes are placed
+5. **Collect solutions**: All valid final states where all pickup subjects are placed and timetable is complete
+6. **Rank**: Sort by (has capacity warning ASC, number of changes ASC)
 
 **Alternatives Considered:**
 
@@ -319,18 +328,19 @@ The algorithm models the problem as a graph search:
 
 ## Edge Cases
 
-| Scenario                                                    | Handling                                                |
-| ----------------------------------------------------------- | ------------------------------------------------------- |
-| Target subject has no available classes                     | Show "not possible" + alternatives from same allocation |
-| All target classes exceed capacity                          | Show all options with warnings (still valid)            |
-| Circular dependency in swaps                                | BFS visited-state tracking prevents infinite loops      |
-| Student enters invalid subject code                         | Autocomplete prevents; validation error on submit       |
-| Uploaded JSON malformed                                     | Show clear error message, don't save to storage         |
-| Subject only offered in one semester but student needs both | Algorithm respects semester constraints                 |
-| Request run on old timetable data                           | Show "outdated" badge, offer rerun option               |
-| Student already has the pickup subject                      | Show error: "Student already enrolled in this subject"  |
-| Student has duplicate subject classes                       | Validation catches and displays error                   |
-| Drop and pickup have different durations                    | Pickup options filtered to match drop duration          |
+| Scenario                                                    | Handling                                                     |
+| ----------------------------------------------------------- | ------------------------------------------------------------ |
+| Target subject has no available classes                     | Show "not possible" + alternatives from same allocation      |
+| All target classes exceed capacity                          | Show all options with warnings (still valid)                 |
+| Circular dependency in swaps                                | BFS visited-state tracking prevents infinite loops           |
+| Student enters invalid subject code                         | Autocomplete prevents; validation error on submit            |
+| Uploaded JSON malformed                                     | Show clear error message, don't save to storage              |
+| Subject only offered in one semester but student needs both | Algorithm respects semester constraints                      |
+| Request run on old timetable data                           | Show "outdated" badge, offer rerun option                    |
+| Student already has the pickup subject                      | Show error: "Student already enrolled in this subject"       |
+| Student has duplicate subject classes                       | Validation catches and displays error                        |
+| Drop year-long, pickup semester                             | Second pickup dropdown appears; requires 2 semester subjects |
+| Drop semester, pickup year-long                             | Not supported (semester → semester only)                     |
 
 ---
 
@@ -396,12 +406,8 @@ Labels can be edited by clicking on them, which transforms the text into an inpu
 
 ## Future Enhancements (Out of MVP Scope)
 
-- Support for multiple year levels beyond Year 10
-- Bulk check multiple students at once
-- Export results to PDF/CSV
-- Apply solutions and track enrollment changes
+- Apply solutions to master timetable and track enrollment changes
 - Timetable version history (save and restore previous versions)
 - Archive/resolve actioned requests without deleting
 - Motion and transitions for UI polish
 - Extend alternative suggestions when no solutions found to be more sophisticated
-- Support swapping a year long subject with two semester long subjects

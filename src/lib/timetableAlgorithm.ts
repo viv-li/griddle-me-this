@@ -177,8 +177,8 @@ interface BFSState {
   schedule: Subject[];
   /** Changes made to reach this state */
   changes: ClassChange[];
-  /** The class we're still trying to place (null if successfully placed) */
-  pendingClass: Subject | null;
+  /** Classes we're still trying to place (empty array if all placed) */
+  pendingClasses: Subject[];
 }
 
 /**
@@ -192,19 +192,34 @@ function getStateKey(schedule: Subject[]): string {
 }
 
 /**
+ * Generate cartesian product of arrays.
+ * For [[a,b], [c,d]] returns [[a,c], [a,d], [b,c], [b,d]]
+ */
+function cartesianProduct<T>(arrays: T[][]): T[][] {
+  if (arrays.length === 0) return [[]];
+  if (arrays.length === 1) return arrays[0].map((x) => [x]);
+
+  return arrays.reduce<T[][]>(
+    (acc, arr) => acc.flatMap((combo) => arr.map((item) => [...combo, item])),
+    [[]]
+  );
+}
+
+/**
  * Find all valid solutions for a subject change request.
  *
  * Uses BFS to explore all possible timetable rearrangements that would
- * allow the student to drop one subject and pick up another.
+ * allow the student to drop one subject and pick up one or more others.
  *
- * Supports two modes:
- * - Subject change: dropSubject !== pickupSubject (e.g., drop 10HIS, pick up 11HIM)
- * - Class change: dropSubject === pickupSubject (find different class of same subject)
+ * Supports three modes:
+ * - Subject change: drop one subject, pick up one different subject
+ * - Class change: pickupSubjects[0] === dropSubject (find different class of same subject)
+ * - Year-to-semesters: drop one year-long, pick up two semester subjects
  *
  * @param allSubjects - All subjects in the master timetable
  * @param currentSchedule - Student's current enrolled classes
  * @param dropSubject - Level+subject to drop (e.g., "10HIS")
- * @param pickupSubject - Level+subject to pick up (e.g., "11HIM"). Same as dropSubject for class change.
+ * @param pickupSubjects - Level+subject(s) to pick up (e.g., ["11HIM"] or ["10ART", "10MUS"])
  * @param maxDepth - Maximum number of rearrangements to consider (default: 5)
  * @returns Array of valid solutions (unsorted - use rankSolutions to sort)
  */
@@ -212,14 +227,19 @@ export function findSolutions(
   allSubjects: Subject[],
   currentSchedule: Subject[],
   dropSubject: string,
-  pickupSubject: string,
+  pickupSubjects: string[],
   maxDepth: number = 5
 ): Solution[] {
   const solutions: Solution[] = [];
   const visited = new Set<string>();
 
+  if (pickupSubjects.length === 0) {
+    return [];
+  }
+
   // Determine if this is a class change (same subject, different class)
-  const isClassChange = dropSubject === pickupSubject;
+  const isClassChange =
+    pickupSubjects.length === 1 && dropSubject === pickupSubjects[0];
 
   // Step 1: Remove the dropped subject from schedule
   const droppedClass = currentSchedule.find(
@@ -242,31 +262,36 @@ export function findSolutions(
     description: `Drop ${droppedClass.code} (${droppedClass.allocation})`,
   };
 
-  // Step 2: Find all classes of the pickup subject
-  let targetClasses = findSubjectClasses(allSubjects, pickupSubject);
+  // Step 2: Find all classes for each pickup subject
+  const targetClassesBySubject = pickupSubjects.map((subject) => {
+    let classes = findSubjectClasses(allSubjects, subject);
+    // For class change, exclude the student's current class
+    if (isClassChange) {
+      classes = classes.filter((c) => c.code !== droppedClass.code);
+    }
+    return classes;
+  });
 
-  // For class change, exclude the student's current class
-  if (isClassChange) {
-    targetClasses = targetClasses.filter((c) => c.code !== droppedClass.code);
-  }
-
-  if (targetClasses.length === 0) {
-    // No classes exist for this subject
+  // Check if any pickup subject has no available classes
+  if (targetClassesBySubject.some((classes) => classes.length === 0)) {
     return [];
   }
 
-  // Step 3: BFS for each target class
-  for (const targetClass of targetClasses) {
-    // Initialize BFS queue
+  // Step 3: Generate all combinations of target classes
+  const targetCombinations = cartesianProduct(targetClassesBySubject);
+
+  // Step 4: BFS for each combination of target classes
+  for (const targetClasses of targetCombinations) {
+    // Initialize BFS queue with all target classes as pending
     const queue: BFSState[] = [
       {
         schedule: scheduleAfterDrop,
         changes: [dropChange],
-        pendingClass: targetClass,
+        pendingClasses: targetClasses,
       },
     ];
 
-    // Track visited states for this target
+    // Track visited states for this target combination
     const targetVisited = new Set<string>();
     targetVisited.add(getStateKey(scheduleAfterDrop));
 
@@ -278,36 +303,74 @@ export function findSolutions(
         continue;
       }
 
-      // If no pending class, this is a complete solution
-      if (!state.pendingClass) {
+      // If no pending classes, this shouldn't happen (we record solution when last is placed)
+      if (state.pendingClasses.length === 0) {
         continue;
       }
 
-      // Try to add the pending class
-      const conflicts = findConflicts(state.schedule, state.pendingClass);
+      // Try to place pending classes that have no conflicts
+      // Find which pending classes can be placed right now
+      const placeable: Subject[] = [];
+      const blocked: Subject[] = [];
 
-      if (conflicts.length === 0) {
-        // No conflicts - we can place the class!
-        const newSchedule = [...state.schedule, state.pendingClass];
-        const enrollChange: ClassChange = {
-          type: "enroll",
-          toClass: state.pendingClass,
-          description: `Enroll in ${state.pendingClass.code} (${state.pendingClass.allocation})`,
-        };
+      for (const pending of state.pendingClasses) {
+        const conflicts = findConflicts(state.schedule, pending);
+        if (conflicts.length === 0) {
+          placeable.push(pending);
+        } else {
+          blocked.push(pending);
+        }
+      }
 
-        // Check if this final state is already a known solution
-        const finalKey = getStateKey(newSchedule);
-        if (!visited.has(finalKey)) {
-          visited.add(finalKey);
-          solutions.push({
-            newTimetable: newSchedule,
-            changes: [...state.changes, enrollChange],
-            hasCapacityWarning: false, // Will be set by checkCapacity later
-            capacityWarnings: [],
-          });
+      if (placeable.length > 0) {
+        // Place all classes that can be placed without conflicts
+        let newSchedule = [...state.schedule];
+        const enrollChanges: ClassChange[] = [];
+
+        for (const pending of placeable) {
+          // Verify still no conflicts after placing previous ones
+          if (findConflicts(newSchedule, pending).length === 0) {
+            newSchedule = [...newSchedule, pending];
+            enrollChanges.push({
+              type: "enroll",
+              toClass: pending,
+              description: `Enroll in ${pending.code} (${pending.allocation})`,
+            });
+          } else {
+            // This pending class now conflicts due to another placement
+            blocked.push(pending);
+          }
+        }
+
+        if (blocked.length === 0) {
+          // All classes placed - this is a complete solution!
+          const finalKey = getStateKey(newSchedule);
+          if (!visited.has(finalKey)) {
+            visited.add(finalKey);
+            solutions.push({
+              newTimetable: newSchedule,
+              changes: [...state.changes, ...enrollChanges],
+              hasCapacityWarning: false, // Will be set by checkCapacity later
+              capacityWarnings: [],
+            });
+          }
+        } else {
+          // Some classes placed, but some still blocked - continue BFS
+          const newStateKey = getStateKey(newSchedule);
+          if (!targetVisited.has(newStateKey)) {
+            targetVisited.add(newStateKey);
+            queue.push({
+              schedule: newSchedule,
+              changes: [...state.changes, ...enrollChanges],
+              pendingClasses: blocked,
+            });
+          }
         }
       } else {
-        // Conflicts exist - try to move conflicting subjects
+        // No classes can be placed - try rearrangements for the first blocked class
+        const pendingClass = state.pendingClasses[0];
+        const conflicts = findConflicts(state.schedule, pendingClass);
+
         for (const conflict of conflicts) {
           for (const conflictingSubject of conflict.conflictingSubjects) {
             // Find alternatives for the conflicting subject
@@ -335,11 +398,11 @@ export function findSolutions(
                   description: `Move from ${conflictingSubject.code} (${conflictingSubject.allocation}) to ${alternative.code} (${alternative.allocation})`,
                 };
 
-                // Add new state to queue
+                // Add new state to queue (same pending classes)
                 queue.push({
                   schedule: newSchedule,
                   changes: [...state.changes, rearrangeChange],
-                  pendingClass: state.pendingClass,
+                  pendingClasses: state.pendingClasses,
                 });
               }
             }

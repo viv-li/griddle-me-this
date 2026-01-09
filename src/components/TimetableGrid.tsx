@@ -9,8 +9,8 @@ interface TimetableGridProps {
   newTimetable: Subject[];
   /** Subject being dropped (level+subject code) */
   dropSubject: string;
-  /** Subject being picked up (level+subject code) */
-  pickupSubject: string;
+  /** Subject(s) being picked up (level+subject codes) */
+  pickupSubjects: string[];
   /** Optional title */
   title?: string;
   /** Whether to show the legend (default true) */
@@ -56,7 +56,7 @@ export function TimetableGrid({
   originalTimetable,
   newTimetable,
   dropSubject,
-  pickupSubject,
+  pickupSubjects,
   title,
   showLegend = true,
   mode = "new",
@@ -120,8 +120,8 @@ export function TimetableGrid({
               oldStatus = "rearranged-out";
             }
 
-            if (newLevelSubject === pickupSubject) {
-              // New is the pickup subject
+            if (pickupSubjects.includes(newLevelSubject)) {
+              // New is one of the pickup subjects
               newStatus = "added";
             } else {
               // New subject moved in (rearranged)
@@ -142,7 +142,7 @@ export function TimetableGrid({
     }
 
     return { oldGrid: oGrid, newGrid: nGrid };
-  }, [originalTimetable, newTimetable, dropSubject, pickupSubject]);
+  }, [originalTimetable, newTimetable, dropSubject, pickupSubjects]);
 
   const grid = mode === "old" ? oldGrid : newGrid;
 

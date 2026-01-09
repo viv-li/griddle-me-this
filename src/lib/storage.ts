@@ -56,8 +56,24 @@ export function saveRequests(requests: ChangeRequest[]): void {
 }
 
 /**
+ * Migrate old request format (pickupSubject: string) to new format (pickupSubjects: string[])
+ */
+function migrateRequest(request: Record<string, unknown>): ChangeRequest {
+  // Handle migration from old pickupSubject string to new pickupSubjects array
+  if ("pickupSubject" in request && !("pickupSubjects" in request)) {
+    const { pickupSubject, ...rest } = request;
+    return {
+      ...rest,
+      pickupSubjects: [pickupSubject as string],
+    } as unknown as ChangeRequest;
+  }
+  return request as unknown as ChangeRequest;
+}
+
+/**
  * Load change requests from localStorage
  * Returns empty array if no data exists or data is corrupted
+ * Automatically migrates old pickupSubject format to pickupSubjects array
  */
 export function loadRequests(): ChangeRequest[] {
   const stored = localStorage.getItem(REQUESTS_KEY);
@@ -66,7 +82,8 @@ export function loadRequests(): ChangeRequest[] {
   try {
     const parsed = JSON.parse(stored);
     if (Array.isArray(parsed)) {
-      return parsed as ChangeRequest[];
+      // Apply migration to each request
+      return parsed.map(migrateRequest);
     }
     return [];
   } catch {

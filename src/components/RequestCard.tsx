@@ -139,7 +139,9 @@ export function RequestCard({
                   <>
                     <span className="font-mono">{request.dropSubject}</span>
                     {" → "}
-                    <span className="font-mono">{request.pickupSubject}</span>
+                    <span className="font-mono">
+                      {request.pickupSubjects.join(" + ")}
+                    </span>
                   </>
                 )}
               </p>

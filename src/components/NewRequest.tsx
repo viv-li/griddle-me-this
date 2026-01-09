@@ -20,7 +20,7 @@ interface NewRequestProps {
     label: string;
     studentSubjectCodes: string[];
     dropSubject: string;
-    pickupSubject: string;
+    pickupSubjects: string[];
     requestType: RequestType;
   }) => void;
   /** Initial data to pre-populate the form (for cloning) */
@@ -28,7 +28,7 @@ interface NewRequestProps {
     label?: string;
     studentSubjectCodes: string[];
     dropSubject: string;
-    pickupSubject: string;
+    pickupSubjects: string[];
     requestType?: RequestType;
   };
   /** Whether a timetable has been uploaded */
@@ -55,8 +55,8 @@ export function NewRequest({
   const [dropSubject, setDropSubject] = useState(
     initialData?.dropSubject ?? ""
   );
-  const [pickupSubject, setPickupSubject] = useState(
-    initialData?.pickupSubject ?? ""
+  const [pickupSubjects, setPickupSubjects] = useState<string[]>(
+    initialData?.pickupSubjects ?? []
   );
   const [requestType, setRequestType] = useState<RequestType>(
     initialData?.requestType ?? "subject-change"
@@ -76,7 +76,7 @@ export function NewRequest({
       setSelectedCodes(initialData.studentSubjectCodes);
       setLabel(initialData.label ?? "");
       setDropSubject(initialData.dropSubject);
-      setPickupSubject(initialData.pickupSubject);
+      setPickupSubjects(initialData.pickupSubjects);
       setRequestType(initialData.requestType ?? "subject-change");
     }
   }, [initialData]);
@@ -86,7 +86,7 @@ export function NewRequest({
     setSelectedCodes(newCodes);
     // Reset drop/pickup since the student's subjects changed
     setDropSubject("");
-    setPickupSubject("");
+    setPickupSubjects([]);
   };
 
   // Get selected Subject objects and validate
@@ -101,15 +101,15 @@ export function NewRequest({
   const hasNoTimetable = subjects.length === 0;
 
   const handleSubmit = () => {
-    // For class-change mode, pickupSubject should be the same as dropSubject
-    const finalPickupSubject =
-      requestType === "class-change" ? dropSubject : pickupSubject;
+    // For class-change mode, pickupSubjects should be the same as dropSubject
+    const finalPickupSubjects =
+      requestType === "class-change" ? [dropSubject] : pickupSubjects;
 
     onSubmit({
       label,
       studentSubjectCodes: selectedCodes,
       dropSubject,
-      pickupSubject: finalPickupSubject,
+      pickupSubjects: finalPickupSubjects,
       requestType,
     });
   };
@@ -215,8 +215,8 @@ export function NewRequest({
                   studentSubjects={selectedSubjects}
                   dropSubject={dropSubject}
                   onDropChange={setDropSubject}
-                  pickupSubject={pickupSubject}
-                  onPickupChange={setPickupSubject}
+                  pickupSubjects={pickupSubjects}
+                  onPickupSubjectsChange={setPickupSubjects}
                   requestType={requestType}
                   onRequestTypeChange={setRequestType}
                   onSubmit={handleSubmit}
