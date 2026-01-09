@@ -433,7 +433,32 @@ Add a mode toggle to the change request form for "Change class" mode - user sele
 | `src/components/RequestCard.tsx`              | Shared request display card              |
 | `src/components/ResultsDisplay.tsx`           | Results container                        |
 | `src/components/RequestHistory.tsx`           | Past requests list ("All Requests")      |
+| `src/components/ThemeToggle.tsx`              | Dark/light mode toggle button            |
 | `src/App.tsx`                                 | Main app shell and navigation            |
+
+---
+
+## Phase 8: Dark Mode ✅
+
+### 8.1 Theme Toggle Component
+
+- Create [`src/components/ThemeToggle.tsx`](src/components/ThemeToggle.tsx):
+  - Sun/Moon icons from lucide-react for visual toggle
+  - Initialize from localStorage, fall back to system preference (`prefers-color-scheme`)
+  - Toggle adds/removes `dark` class on `<html>` element
+  - Persist choice to localStorage under key `theme`
+  - Uses shadcn Button with `variant="ghost"` and `size="icon"`
+
+### 8.2 Header Integration
+
+- Update [`src/App.tsx`](src/App.tsx):
+  - Add ThemeToggle to header between logo/title and NavigationMenu
+  - Wrapped in flex container for proper spacing
+
+### 8.3 Pre-existing Infrastructure
+
+- Dark mode CSS variables already defined in [`src/index.css`](src/index.css) (`.dark` class)
+- Tailwind configured with `darkMode: ["class"]` in [`tailwind.config.js`](tailwind.config.js)
 
 ---
 

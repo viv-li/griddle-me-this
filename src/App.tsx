@@ -23,6 +23,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { History, Plus, Upload } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   loadTimetable,
   addRequest,
@@ -257,7 +258,7 @@ function App() {
               onClick={navigateHome}
             >
               <svg viewBox="0 0 32 32" className="h-7 w-7">
-                <rect width="32" height="32" rx="6" fill="#18181b" />
+                <rect width="32" height="32" rx="6" className="fill-zinc-900 dark:fill-zinc-100" />
                 <rect x="5" y="5" width="9" height="9" rx="2" fill="#3b82f6" />
                 <rect x="18" y="5" width="9" height="9" rx="2" fill="#22c55e" />
                 <rect x="5" y="18" width="9" height="9" rx="2" fill="#8b5cf6" />
@@ -272,7 +273,9 @@ function App() {
               </svg>
               Griddle Me This
             </h1>
-            <NavigationMenu>
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <NavigationMenu>
               <NavigationMenuList>
                 <NavigationMenuItem>
                   <NavigationMenuLink
@@ -318,6 +321,7 @@ function App() {
                 </NavigationMenuItem>
               </NavigationMenuList>
             </NavigationMenu>
+            </div>
           </div>
         </header>
 

@@ -204,7 +204,8 @@ src/
 │   ├── EditableLabel.tsx          # In-place label editing
 │   ├── RequestCard.tsx            # Shared request display component
 │   ├── ResultsDisplay.tsx         # Results container with RequestCard
-│   └── RequestHistory.tsx         # All Requests list
+│   ├── RequestHistory.tsx         # All Requests list
+│   └── ThemeToggle.tsx            # Dark/light mode toggle button
 ├── lib/
 │   ├── timetableAlgorithm.ts      # BFS solver, capacity checking, ranking
 │   ├── timetableUtils.ts          # Subject utility functions
@@ -374,6 +375,14 @@ Labels can be edited by clicking on them, which transforms the text into an inpu
 - **Neutrals**: Warm gray tones for backgrounds, borders, and text
 - **Semantic colors**: Green (success/solutions found), red (errors/no solutions), amber (warnings/outdated)
 
+### Dark Mode
+
+- **Toggle**: Sun/Moon icon button in header, between logo and navigation
+- **Persistence**: Theme preference saved to localStorage
+- **Default**: Respects system preference (`prefers-color-scheme`)
+- **Implementation**: Tailwind CSS class-based dark mode with CSS custom properties
+- All semantic colors (success, error, warning) have dark mode variants for proper contrast
+
 ### Favicon
 
 - Grid-themed SVG icon with four colored squares representing the allocation grid concept
@@ -394,5 +403,5 @@ Labels can be edited by clicking on them, which transforms the text into an inpu
 - Timetable version history (save and restore previous versions)
 - Archive/resolve actioned requests without deleting
 - Motion and transitions for UI polish
-- Dark mode support
 - Extend alternative suggestions when no solutions found to be more sophisticated
+- Support swapping a year long subject with two semester long subjects

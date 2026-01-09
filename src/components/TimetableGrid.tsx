@@ -149,12 +149,12 @@ export function TimetableGrid({
   const getCellClasses = (status: CellStatus) => {
     switch (status) {
       case "dropped":
-        return "bg-red-100 text-red-800 border-red-200";
+        return "bg-red-100 text-red-800 border-red-200 dark:bg-red-950 dark:text-red-300 dark:border-red-800";
       case "added":
-        return "bg-green-100 text-green-800 border-green-200";
+        return "bg-green-100 text-green-800 border-green-200 dark:bg-green-950 dark:text-green-300 dark:border-green-800";
       case "rearranged-out":
       case "rearranged-in":
-        return "bg-amber-100 text-amber-800 border-amber-200";
+        return "bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800";
       default:
         return "bg-muted/30";
     }
@@ -211,22 +211,22 @@ export function TimetableGrid({
           {mode === "old" ? (
             <>
               <div className="flex items-center gap-1">
-                <div className="w-3 h-3 rounded bg-red-100 border border-red-200"></div>
+                <div className="w-3 h-3 rounded bg-red-100 border border-red-200 dark:bg-red-950 dark:border-red-800"></div>
                 <span>Dropping</span>
               </div>
               <div className="flex items-center gap-1">
-                <div className="w-3 h-3 rounded bg-amber-100 border border-amber-200"></div>
+                <div className="w-3 h-3 rounded bg-amber-100 border border-amber-200 dark:bg-amber-950 dark:border-amber-800"></div>
                 <span>Moving out</span>
               </div>
             </>
           ) : (
             <>
               <div className="flex items-center gap-1">
-                <div className="w-3 h-3 rounded bg-green-100 border border-green-200"></div>
+                <div className="w-3 h-3 rounded bg-green-100 border border-green-200 dark:bg-green-950 dark:border-green-800"></div>
                 <span>Adding</span>
               </div>
               <div className="flex items-center gap-1">
-                <div className="w-3 h-3 rounded bg-amber-100 border border-amber-200"></div>
+                <div className="w-3 h-3 rounded bg-amber-100 border border-amber-200 dark:bg-amber-950 dark:border-amber-800"></div>
                 <span>Moving in</span>
               </div>
             </>

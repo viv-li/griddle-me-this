@@ -54,8 +54,8 @@ export class ErrorBoundary extends Component<
         <div className="min-h-[400px] flex items-center justify-center p-4">
           <Card className="max-w-md w-full">
             <CardHeader className="text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-amber-100">
-                <AlertTriangle className="h-8 w-8 text-amber-600" />
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900">
+                <AlertTriangle className="h-8 w-8 text-amber-600 dark:text-amber-400" />
               </div>
               <CardTitle>Something went wrong</CardTitle>
             </CardHeader>

@@ -123,8 +123,8 @@ function FormatHelpCard() {
           <CardHeader className="cursor-pointer select-none hover:bg-muted/50 transition-colors rounded-t-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100">
-                  <HelpCircle className="h-5 w-5 text-amber-600" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900">
+                  <HelpCircle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                 </div>
                 <div className="text-left">
                   <CardTitle className="text-base">Data Format Help</CardTitle>
@@ -222,7 +222,7 @@ function FormatHelpCard() {
                 </Button>
               </div>
 
-              <div className="rounded-lg bg-purple-50 border border-purple-200 p-3 text-sm text-purple-800">
+              <div className="rounded-lg bg-purple-50 border border-purple-200 p-3 text-sm text-purple-800 dark:bg-purple-950 dark:border-purple-800 dark:text-purple-300">
                 <p className="font-medium mb-1">How to use:</p>
                 <ol className="list-decimal list-inside space-y-1 text-xs">
                   <li>Create a new Claude Project at claude.ai</li>
@@ -333,8 +333,8 @@ export function TimetableUpload({ onTimetableChange }: TimetableUploadProps) {
       <div className="space-y-6">
         <Card className="mx-auto max-w-2xl">
           <CardHeader className="text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-              <CheckCircle2 className="h-8 w-8 text-green-600" />
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900">
+              <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
             </div>
             <CardTitle>Timetable Loaded</CardTitle>
             <CardDescription>
@@ -358,7 +358,7 @@ export function TimetableUpload({ onTimetableChange }: TimetableUploadProps) {
 
             {/* Success message */}
             {successMessage && (
-              <div className="flex items-center gap-2 rounded-lg bg-green-50 border border-green-200 p-3 text-sm text-green-700">
+              <div className="flex items-center gap-2 rounded-lg bg-green-50 border border-green-200 p-3 text-sm text-green-700 dark:bg-green-950 dark:border-green-800 dark:text-green-300">
                 <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
                 {successMessage}
               </div>
@@ -366,7 +366,7 @@ export function TimetableUpload({ onTimetableChange }: TimetableUploadProps) {
 
             {/* Error message */}
             {error && (
-              <div className="flex items-center gap-2 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+              <div className="flex items-center gap-2 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700 dark:bg-red-950 dark:border-red-800 dark:text-red-300">
                 <AlertCircle className="h-4 w-4 flex-shrink-0" />
                 {error}
               </div>
@@ -537,7 +537,7 @@ export function TimetableUpload({ onTimetableChange }: TimetableUploadProps) {
         <CardContent className="space-y-4">
           {/* Error message */}
           {error && (
-            <div className="flex items-center gap-2 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+            <div className="flex items-center gap-2 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700 dark:bg-red-950 dark:border-red-800 dark:text-red-300">
               <AlertCircle className="h-4 w-4 flex-shrink-0" />
               {error}
             </div>

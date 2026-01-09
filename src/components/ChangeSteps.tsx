@@ -44,7 +44,7 @@ function CapacityBadge({ subject }: { subject: Subject }) {
       variant={isOverCapacity ? "outline" : "secondary"}
       className={cn(
         "font-mono text-xs",
-        isOverCapacity && "text-amber-600 border-amber-300"
+        isOverCapacity && "text-amber-600 border-amber-300 dark:text-amber-400 dark:border-amber-700"
       )}
     >
       {newEnrolled}/{capacity}

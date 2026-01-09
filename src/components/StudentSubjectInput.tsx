@@ -275,11 +275,11 @@ export function StudentSubjectInput({
                           "border p-1.5 text-center font-mono",
                           isFilled
                             ? isYearLong
-                              ? "bg-blue-50 text-blue-700"
+                              ? "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
                               : isSem1
-                              ? "bg-green-50 text-green-700"
-                              : "bg-violet-50 text-violet-700"
-                            : "bg-red-50 text-red-400"
+                              ? "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300"
+                              : "bg-violet-50 text-violet-700 dark:bg-violet-950 dark:text-violet-300"
+                            : "bg-red-50 text-red-400 dark:bg-red-950 dark:text-red-400"
                         )}
                       >
                         {subject?.code || "—"}
@@ -295,26 +295,26 @@ export function StudentSubjectInput({
         {/* Legend */}
         <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
           <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded bg-blue-50 border border-blue-200"></div>
+            <div className="w-3 h-3 rounded bg-blue-50 border border-blue-200 dark:bg-blue-950 dark:border-blue-800"></div>
             <span>Year-long</span>
           </div>
           <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded bg-green-50 border border-green-200"></div>
+            <div className="w-3 h-3 rounded bg-green-50 border border-green-200 dark:bg-green-950 dark:border-green-800"></div>
             <span>Sem 1</span>
           </div>
           <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded bg-violet-50 border border-violet-200"></div>
+            <div className="w-3 h-3 rounded bg-violet-50 border border-violet-200 dark:bg-violet-950 dark:border-violet-800"></div>
             <span>Sem 2</span>
           </div>
           <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded bg-red-50 border border-red-200"></div>
+            <div className="w-3 h-3 rounded bg-red-50 border border-red-200 dark:bg-red-950 dark:border-red-800"></div>
             <span>Empty</span>
           </div>
         </div>
 
         {/* Conflict warnings */}
         {validation.conflicts.length > 0 && (
-          <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+          <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700 dark:bg-red-950 dark:border-red-800 dark:text-red-300">
             <div className="flex items-center gap-2 font-medium">
               <AlertCircle className="h-4 w-4" />
               Schedule Conflicts
@@ -332,7 +332,7 @@ export function StudentSubjectInput({
 
         {/* Duplicate subject warnings */}
         {validation.duplicateSubjects.length > 0 && (
-          <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+          <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700 dark:bg-red-950 dark:border-red-800 dark:text-red-300">
             <div className="flex items-center gap-2 font-medium">
               <AlertCircle className="h-4 w-4" />
               Duplicate Subjects

@@ -102,16 +102,16 @@ export function RequestCard({
             {/* Solution status icon - always visible on left */}
             <div className="shrink-0">
               {hasSolutions && !allSolutionsOverCapacity ? (
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100">
-                  <CheckCircle className="h-5 w-5 text-green-600" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100 dark:bg-green-900">
+                  <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
                 </div>
               ) : hasSolutions && allSolutionsOverCapacity ? (
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100">
-                  <AlertCircle className="h-5 w-5 text-amber-600" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900">
+                  <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                 </div>
               ) : (
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100">
-                  <XCircle className="h-5 w-5 text-red-600" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 dark:bg-red-900">
+                  <XCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
                 </div>
               )}
             </div>
@@ -153,7 +153,7 @@ export function RequestCard({
               {rerunSuccess && (
                 <Badge
                   variant="outline"
-                  className="text-green-600 border-green-300 bg-green-50 shrink-0"
+                  className="text-green-600 border-green-300 bg-green-50 dark:text-green-400 dark:border-green-700 dark:bg-green-950 shrink-0"
                 >
                   <Check className="mr-1 h-3 w-3" />
                   Updated
@@ -164,7 +164,7 @@ export function RequestCard({
                   <TooltipTrigger asChild>
                     <Badge
                       variant="outline"
-                      className="text-red-600 border-red-300 bg-red-50 shrink-0 cursor-help"
+                      className="text-red-600 border-red-300 bg-red-50 dark:text-red-400 dark:border-red-700 dark:bg-red-950 shrink-0 cursor-help"
                     >
                       Incompatible
                     </Badge>
@@ -183,7 +183,7 @@ export function RequestCard({
               {isStale && !hasMissingSubjects && !rerunSuccess && (
                 <Badge
                   variant="outline"
-                  className="text-amber-600 border-amber-300 bg-amber-50 shrink-0"
+                  className="text-amber-600 border-amber-300 bg-amber-50 dark:text-amber-400 dark:border-amber-700 dark:bg-amber-950 shrink-0"
                 >
                   Outdated
                 </Badge>

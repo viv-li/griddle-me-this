@@ -60,12 +60,12 @@ export function SolutionCard({
                   <CardTitle className="text-lg flex items-center gap-2">
                     Solution {index}
                     {isRecommended && (
-                      <Badge className="bg-green-600">Recommended</Badge>
+                      <Badge className="bg-green-600 dark:bg-green-700">Recommended</Badge>
                     )}
                     {solution.hasCapacityWarning && (
                       <Badge
                         variant="outline"
-                        className="text-amber-600 border-amber-300"
+                        className="text-amber-600 border-amber-300 dark:text-amber-400 dark:border-amber-700"
                       >
                         <AlertTriangle className="mr-1 h-3 w-3" />
                         Over Capacity
@@ -116,15 +116,15 @@ export function SolutionCard({
               {/* Legend */}
               <div className="flex flex-wrap gap-4 text-xs text-muted-foreground mt-3">
                 <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded bg-red-100 border border-red-200"></div>
+                  <div className="w-3 h-3 rounded bg-red-100 border border-red-200 dark:bg-red-950 dark:border-red-800"></div>
                   <span>Dropping</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded bg-green-100 border border-green-200"></div>
+                  <div className="w-3 h-3 rounded bg-green-100 border border-green-200 dark:bg-green-950 dark:border-green-800"></div>
                   <span>Adding</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded bg-amber-100 border border-amber-200"></div>
+                  <div className="w-3 h-3 rounded bg-amber-100 border border-amber-200 dark:bg-amber-950 dark:border-amber-800"></div>
                   <span>Moving</span>
                 </div>
               </div>

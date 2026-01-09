@@ -15,6 +15,7 @@ A frontend-only React web application for teachers to check whether a student's 
 - **Dual Timetable Display**: Side-by-side current vs new timetable comparison
 - **Ranked Solutions**: Solutions sorted by capacity warnings and number of changes
 - **Request Management**: Track requests with inline editing, clone, rerun, and delete actions
+- **Dark Mode**: Toggle between light and dark themes, with system preference detection and localStorage persistence
 
 ## Prerequisites
 
@@ -103,7 +104,8 @@ src/
 │   ├── EditableLabel.tsx         # In-place label editing
 │   ├── RequestCard.tsx           # Shared request display component
 │   ├── ResultsDisplay.tsx        # Results container
-│   └── RequestHistory.tsx        # All Requests list
+│   ├── RequestHistory.tsx        # All Requests list
+│   └── ThemeToggle.tsx           # Dark/light mode toggle
 ├── lib/                          # Core logic
 │   ├── storage.ts                # LocalStorage helpers
 │   ├── validation.ts             # Data validation (schedule + duplicates)

@@ -98,11 +98,11 @@ export function ResultsDisplay({
 
       {/* Warning for missing subject codes */}
       {missingSubjectCodes.length > 0 && (
-        <div className="flex items-start gap-3 rounded-lg bg-amber-50 border border-amber-200 p-4 text-sm text-amber-800">
+        <div className="flex items-start gap-3 rounded-lg bg-amber-50 border border-amber-200 p-4 text-sm text-amber-800 dark:bg-amber-950 dark:border-amber-800 dark:text-amber-200">
           <AlertTriangle className="h-5 w-5 flex-shrink-0 mt-0.5" />
           <div>
             <p className="font-medium">Some subjects not found</p>
-            <p className="mt-1 text-amber-700">
+            <p className="mt-1 text-amber-700 dark:text-amber-300">
               The following subject codes were not found in the current
               timetable:{" "}
               <span className="font-mono">
@@ -110,7 +110,7 @@ export function ResultsDisplay({
               </span>
               . Results may be inaccurate.
             </p>
-            <p className="mt-2 text-xs text-amber-600">
+            <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">
               Consider cloning this request and updating the student's subjects,
               or re-uploading an older compatible version of the timetable.
             </p>
@@ -142,8 +142,8 @@ export function ResultsDisplay({
         <>
           <Card>
             <CardHeader className="text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
-                <XCircle className="h-8 w-8 text-red-600" />
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900">
+                <XCircle className="h-8 w-8 text-red-600 dark:text-red-400" />
               </div>
               <div className="text-lg font-semibold">No Solutions Found</div>
               <CardDescription>
